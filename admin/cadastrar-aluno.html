@@ -44,19 +44,58 @@
           </div>
           <div>
             <label class="mb-2 block text-sm font-bold text-slate-700" for="plano">Plano</label>
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="plano" name="plano" />
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="plano" name="plano" required>
+              <option value="">Selecione um plano</option>
+              <option value="Mensal">Mensal - R$ 80,00</option>
+              <option value="Trimestral">Trimestral - R$ 216,00 (10% de desconto)</option>
+              <option value="Semestral">Semestral - R$ 408,00 (15% de desconto)</option>
+            </select>
+          </div>
+          <div class="rounded-md bg-slate-100 p-4">
+            <p class="text-sm font-bold text-slate-700">Validade da matricula</p>
+            <p id="validade-preview" class="mt-2 text-sm font-semibold text-slate-600">Selecione um plano para calcular automaticamente.</p>
           </div>
           <div>
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="validade_matricula">Validade da matricula</label>
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="validade_matricula" name="validade_matricula" type="date" />
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="forma_pagamento">Forma de pagamento</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="forma_pagamento" name="forma_pagamento" required>
+              <option value="">Selecione a forma</option>
+              <option value="DINHEIRO">Dinheiro</option>
+              <option value="PIX">PIX</option>
+              <option value="CARTAO_CREDITO">Cartao de credito</option>
+              <option value="CARTAO_DEBITO">Cartao de debito</option>
+            </select>
+          </div>
+          <label class="flex items-start gap-3 rounded-md border border-slate-200 p-4 text-sm font-semibold text-slate-700">
+            <input class="mt-1 h-4 w-4 accent-orange-600" id="pagamento_confirmado" name="pagamento_confirmado" type="checkbox" required />
+            <span>Pagamento inicial recebido. Liberar acesso do aluno.</span>
+          </label>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cep">CEP</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cep" name="cep" inputmode="numeric" maxlength="9" placeholder="Ex: 01001-000" />
           </div>
           <div>
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="altura">Altura</label>
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="altura" name="altura" type="number" min="0" max="9.99" step="0.01" placeholder="Ex: 1.75" />
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="endereco">Endereco</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="endereco" name="endereco" />
           </div>
           <div>
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="peso">Peso</label>
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="peso" name="peso" type="number" min="0" max="999.99" step="0.01" placeholder="Ex: 80.50" />
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="numero">Numero</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="numero" name="numero" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="bairro">Bairro</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="bairro" name="bairro" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cidade">Cidade</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cidade" name="cidade" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="estado">Estado</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="estado" name="estado" maxlength="2" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="complemento">Complemento</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="complemento" name="complemento" />
           </div>
           <div class="sm:col-span-2">
             <label class="mb-2 block text-sm font-bold text-slate-700" for="observacoes">Observacoes</label>

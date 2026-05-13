@@ -16,7 +16,9 @@
         <p id="empty-state" class="mt-5 hidden rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500">Nenhum aluno cadastrado.</p>
         <div class="mt-6">
           <label class="mb-2 block text-sm font-bold text-slate-700" for="aluno-id">Aluno</label>
-          <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="aluno-id"></select>
+          <input id="aluno-id" type="hidden" />
+          <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="aluno-search" autocomplete="off" placeholder="Digite as letras iniciais do aluno" />
+          <div id="aluno-results" class="mt-2 hidden overflow-hidden rounded-md border border-slate-200 bg-white"></div>
         </div>
         <pre id="history-box" class="mt-5 min-h-40 whitespace-pre-wrap rounded-md bg-slate-100 p-4 text-sm text-slate-700">Selecione um aluno para ver o historico.</pre>
       </section>

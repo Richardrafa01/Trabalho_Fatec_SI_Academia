@@ -10,10 +10,17 @@ create table alunos (
   data_nascimento date,
   plano varchar(50),
   validade_matricula date,
+  cep varchar(9),
+  endereco varchar(180),
+  numero varchar(20),
+  bairro varchar(100),
+  cidade varchar(100),
+  estado varchar(2),
+  complemento varchar(120),
   observacoes text,
-  altura numeric(4,2),
-  peso numeric(5,2),
   status varchar(20) default 'ATIVO',
+  acesso_criado boolean not null default false,
+  acesso_criado_em timestamp,
   created_at timestamp default now()
 );
 

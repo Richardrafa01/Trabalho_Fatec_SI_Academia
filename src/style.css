@@ -5,3 +5,85 @@
     @apply block text-sm font-medium text-slate-700 dark:text-slate-200;
   }
 }
+
+@layer utilities {
+  body.professor-theme-black {
+    @apply bg-zinc-950 text-zinc-100;
+  }
+
+  body.professor-theme-black header,
+  body.professor-theme-black section,
+  body.professor-theme-black article,
+  body.professor-theme-black .bg-white {
+    @apply border-zinc-800 bg-zinc-900 text-zinc-100 shadow-none;
+  }
+
+  body.professor-theme-black aside {
+    @apply border-zinc-800 bg-black;
+  }
+
+  body.professor-theme-black .bg-slate-100,
+  body.professor-theme-black .bg-slate-50 {
+    @apply bg-zinc-800;
+  }
+
+  body.professor-theme-black .text-slate-950,
+  body.professor-theme-black .text-slate-900,
+  body.professor-theme-black .text-slate-800,
+  body.professor-theme-black .text-slate-700 {
+    @apply text-zinc-100;
+  }
+
+  body.professor-theme-black .text-slate-600,
+  body.professor-theme-black .text-slate-500,
+  body.professor-theme-black .text-slate-300 {
+    @apply text-zinc-400;
+  }
+
+  body.professor-theme-black .border-slate-300,
+  body.professor-theme-black .border-slate-200,
+  body.professor-theme-black .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+    @apply border-zinc-700;
+  }
+
+  body.professor-theme-black input,
+  body.professor-theme-black select,
+  body.professor-theme-black textarea,
+  body.professor-theme-black pre {
+    @apply border-zinc-700 bg-zinc-950 text-zinc-100;
+  }
+
+  body.professor-theme-black input::placeholder {
+    @apply text-zinc-500;
+  }
+
+  body.professor-theme-black .hover\:bg-orange-50:hover,
+  body.professor-theme-black .hover\:bg-slate-50:hover,
+  body.professor-theme-black .hover\:bg-white\/10:hover {
+    @apply bg-zinc-800;
+  }
+
+  body.professor-theme-black .hover\:text-orange-700:hover,
+  body.professor-theme-black .hover\:text-white:hover {
+    @apply text-orange-300;
+  }
+
+  body.professor-theme-black .hover\:border-orange-300:hover {
+    @apply border-orange-500;
+  }
+
+  body.professor-theme-black a:hover,
+  body.professor-theme-black button:hover {
+    @apply text-orange-300;
+  }
+
+  body.professor-theme-black button.bg-orange-600:hover,
+  body.professor-theme-black a.bg-orange-600:hover {
+    @apply bg-orange-500 text-white;
+  }
+
+  body.professor-theme-black button.bg-slate-900:hover,
+  body.professor-theme-black a.bg-slate-900:hover {
+    @apply bg-zinc-700 text-white;
+  }
+}

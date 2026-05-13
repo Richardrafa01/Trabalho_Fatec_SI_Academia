@@ -1,13 +1,36 @@
 import { supabase } from "./supabase.js";
 
 const page = document.body.dataset.page;
+const area = document.body.dataset.area ?? "admin";
 const message = document.querySelector("#message");
-const alunosList = document.querySelector("#alunos-list");
 const alunoSelect = document.querySelector("#aluno-id");
+const alunoSearch = document.querySelector("#aluno-search");
+const alunoResults = document.querySelector("#aluno-results");
+const alunoSelected = document.querySelector("#aluno-selected");
+const deleteAlunoButton = document.querySelector("#delete-aluno-button");
+const bloquearAlunoButton = document.querySelector("#bloquear-aluno-button");
+const liberarAlunoButton = document.querySelector("#liberar-aluno-button");
+const alunosCards = document.querySelector("#alunos-cards");
 const alunoForm = document.querySelector("#aluno-form");
 const emptyState = document.querySelector("#empty-state");
 const historyBox = document.querySelector("#history-box");
 const presencaBox = document.querySelector("#presenca-box");
+const validadePreview = document.querySelector("#validade-preview");
+
+const planos = {
+  Mensal: {
+    meses: 1,
+    valor: 80,
+  },
+  Trimestral: {
+    meses: 3,
+    valor: 216,
+  },
+  Semestral: {
+    meses: 6,
+    valor: 408,
+  },
+};
 
 function showMessage(text, type = "success") {
   if (!message) return;
@@ -22,7 +45,56 @@ async function protectPage() {
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
     window.location.href = "/";
+    return false;
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tipo_usuario, status")
+    .eq("id", data.session.user.id)
+    .maybeSingle();
+
+  if (profile?.status === "INATIVO") {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+    return false;
+  }
+
+  const paginasPermitidasProfessor = ["ver-alunos", "historico-aluno", "presenca-aluno"];
+
+  if (profile?.tipo_usuario === "PROFESSOR" && area !== "professor") {
+    const redirectByPage = {
+      "ver-alunos": "/professor/ver-alunos.html",
+      "historico-aluno": `/professor/historico-aluno.html${window.location.search}`,
+      "presenca-aluno": `/professor/presenca-aluno.html${window.location.search}`,
+    };
+
+    window.location.href = redirectByPage[page] ?? "/professor/menu.html";
+    return false;
+  }
+
+  if (profile?.tipo_usuario === "PROFESSOR" && !paginasPermitidasProfessor.includes(page)) {
+    window.location.href = "/professor/menu.html";
+    return false;
+  }
+
+  if (!["ADMIN", "PROFESSOR"].includes(profile?.tipo_usuario)) {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+    return false;
+  }
+
+  return true;
+}
+
+async function desativarMatriculasVencidas() {
+  const today = toInputDate(todayAsDate());
+
+  await supabase
+    .from("alunos")
+    .update({ status: "INATIVO" })
+    .eq("status", "ATIVO")
+    .lt("validade_matricula", today);
 }
 
 async function getAlunos() {
@@ -43,24 +115,328 @@ function alunoLabel(aluno) {
   return `${aluno.nome_completo ?? "Aluno sem nome"}${aluno.email ? ` - ${aluno.email}` : ""}`;
 }
 
+function normalizeText(value) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function todayAsDate() {
+  const today = new Date();
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+function toInputDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateBR(dateString) {
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function calcularValidadeMatricula(plano) {
+  const config = planos[plano];
+  if (!config) return null;
+
+  const validade = todayAsDate();
+  validade.setMonth(validade.getMonth() + config.meses);
+  return toInputDate(validade);
+}
+
+function formatCurrencyBR(value) {
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
+async function registrarPagamentoMatricula({
+  alunoId,
+  plano,
+  formaPagamento,
+  validadeAnterior = null,
+  validadeNova,
+  observacoes = null,
+}) {
+  const config = planos[plano];
+  if (!config) {
+    return { error: { message: "Plano invalido para registrar pagamento." } };
+  }
+
+  return supabase.from("pagamentos_matriculas").insert({
+    aluno_id: alunoId,
+    plano,
+    valor: config.valor,
+    forma_pagamento: formaPagamento,
+    status: "PAGO",
+    validade_anterior: validadeAnterior,
+    validade_nova: validadeNova,
+    observacoes,
+  });
+}
+
+function alunoTemAcesso(aluno) {
+  const today = toInputDate(todayAsDate());
+  return aluno?.status === "ATIVO" && (!aluno.validade_matricula || aluno.validade_matricula >= today);
+}
+
+async function getAcessosAluno(alunoId) {
+  const { data, error } = await supabase
+    .from("acessos_catraca")
+    .select("status, motivo, origem, registrado_em")
+    .eq("aluno_id", alunoId)
+    .order("registrado_em", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    showMessage(`Erro ao buscar acessos: ${error.message}`, "error");
+    return [];
+  }
+
+  return data ?? [];
+}
+
+function renderAcessos(aluno, acessos) {
+  if (!presencaBox) return;
+
+  const situacao = alunoTemAcesso(aluno)
+    ? "Pre-validacao local: acesso possivelmente liberado."
+    : "Pre-validacao local: acesso bloqueado por status inativo ou vencimento.";
+
+  const linhas = acessos.length
+    ? acessos.map((acesso) => {
+        const dataAcesso = acesso.registrado_em
+          ? new Date(acesso.registrado_em).toLocaleString("pt-BR")
+          : "Data nao informada";
+
+        return `${dataAcesso} | ${acesso.status} | ${acesso.origem} | ${acesso.motivo ?? "-"}`;
+      })
+    : ["Nenhum acesso registrado ainda."];
+
+  presencaBox.textContent = [
+    `Aluno: ${aluno.nome_completo ?? "-"}`,
+    `Status: ${aluno.status ?? "-"}`,
+    `Plano: ${aluno.plano ?? "-"}`,
+    `Vencimento: ${aluno.validade_matricula ? formatDateBR(aluno.validade_matricula) : "-"}`,
+    situacao,
+    "",
+    "Ultimos acessos:",
+    ...linhas,
+  ].join("\n");
+}
+
+async function registrarAcessoCatraca(alunoId, origem = "ADMIN") {
+  const { data, error } = await supabase.rpc("registrar_acesso_catraca", {
+    p_aluno_id: alunoId,
+    p_origem: origem,
+  });
+
+  if (error) {
+    showMessage(`Erro ao consultar catraca: ${error.message}`, "error");
+    return null;
+  }
+
+  return Array.isArray(data) ? data[0] : data;
+}
+
+function atualizarValidadePreview() {
+  if (!alunoForm || !validadePreview) return;
+
+  const plano = alunoForm.elements.plano?.value;
+  const validade = calcularValidadeMatricula(plano);
+
+  validadePreview.textContent = validade
+    ? `Vencimento automatico: ${formatDateBR(validade)}`
+    : "Selecione um plano para calcular automaticamente.";
+}
+
+function atualizarRenovacaoPreview() {
+  if (!alunoForm || !validadePreview) return;
+
+  const plano = alunoForm.elements.plano?.value;
+  const config = planos[plano];
+  const validade = calcularValidadeMatricula(plano);
+
+  validadePreview.textContent = config && validade
+    ? `Valor: ${formatCurrencyBR(config.valor)} | Nova validade: ${formatDateBR(validade)}`
+    : "Selecione um plano para calcular valor e validade.";
+}
+
+function onlyDigits(value) {
+  return value.replace(/\D/g, "");
+}
+
+function formatCep(value) {
+  const digits = onlyDigits(value).slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
+function fillAddress(address) {
+  if (!alunoForm) return;
+
+  const fields = {
+    endereco: address.logradouro,
+    bairro: address.bairro,
+    cidade: address.localidade,
+    estado: address.uf,
+  };
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const field = alunoForm.elements[name];
+    if (field) field.value = value ?? "";
+  });
+
+  alunoForm.elements.numero?.focus();
+}
+
+async function buscarEnderecoPorCep(cep) {
+  const digits = onlyDigits(cep);
+  if (digits.length !== 8) return;
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    const address = await response.json();
+
+    if (address.erro) {
+      showMessage("CEP nao encontrado.", "error");
+      return;
+    }
+
+    fillAddress(address);
+  } catch {
+    showMessage("Nao foi possivel buscar o endereco pelo CEP.", "error");
+  }
+}
+
+function setupCepLookup() {
+  const cepField = alunoForm?.elements.cep;
+  if (!cepField) return;
+
+  cepField.addEventListener("input", () => {
+    cepField.value = formatCep(cepField.value);
+  });
+
+  cepField.addEventListener("blur", () => {
+    buscarEnderecoPorCep(cepField.value);
+  });
+}
+
 async function fillSelect() {
   if (!alunoSelect) return [];
 
   const alunos = await getAlunos();
-  alunoSelect.innerHTML = '<option value="">Selecione um aluno</option>';
 
-  alunos.forEach((aluno) => {
-    const option = document.createElement("option");
-    option.value = aluno.id;
-    option.textContent = alunoLabel(aluno);
-    alunoSelect.append(option);
-  });
+  if (alunoSelect.tagName === "SELECT") {
+    alunoSelect.innerHTML = '<option value="">Selecione um aluno</option>';
+
+    alunos.forEach((aluno) => {
+      const option = document.createElement("option");
+      option.value = aluno.id;
+      option.textContent = alunoLabel(aluno);
+      alunoSelect.append(option);
+    });
+  } else {
+    alunoSelect.value = "";
+  }
 
   if (emptyState) {
     emptyState.classList.toggle("hidden", alunos.length > 0);
   }
 
   return alunos;
+}
+
+function alunoResumo(aluno) {
+  return [
+    aluno.email,
+    aluno.telefone,
+    aluno.plano ? `Plano: ${aluno.plano}` : null,
+    aluno.status ? `Status: ${aluno.status}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+function buscarAlunosPorInicio(alunos, term) {
+  const normalizedTerm = normalizeText(term);
+  if (!normalizedTerm) return [];
+
+  return alunos.filter((aluno) =>
+    normalizeText(aluno.nome_completo).startsWith(normalizedTerm),
+  );
+}
+
+function renderAlunoResults(alunos, onSelect) {
+  if (!alunoResults) return;
+
+  alunoResults.innerHTML = "";
+
+  if (!alunoSearch.value.trim()) {
+    alunoResults.classList.add("hidden");
+    return;
+  }
+
+  if (alunos.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "px-4 py-3 text-sm text-slate-500";
+    empty.textContent = "Nenhum aluno encontrado com essas letras iniciais.";
+    alunoResults.append(empty);
+    alunoResults.classList.remove("hidden");
+    return;
+  }
+
+  alunos.forEach((aluno) => {
+    const button = document.createElement("button");
+    button.className = "block w-full border-b border-slate-100 px-4 py-3 text-left text-sm last:border-b-0 hover:bg-orange-50";
+    button.type = "button";
+
+    const name = document.createElement("strong");
+    name.className = "block text-slate-950";
+    name.textContent = aluno.nome_completo ?? "Aluno sem nome";
+
+    const meta = document.createElement("span");
+    meta.className = "mt-1 block text-xs text-slate-500";
+    meta.textContent = alunoResumo(aluno);
+
+    button.append(name, meta);
+    button.addEventListener("click", () => {
+      if (alunoSelect) alunoSelect.value = aluno.id;
+      if (alunoSearch) alunoSearch.value = alunoLabel(aluno);
+      alunoResults.classList.add("hidden");
+      onSelect(aluno);
+    });
+
+    alunoResults.append(button);
+  });
+
+  alunoResults.classList.remove("hidden");
+}
+
+function setupAlunoSearch(alunos, onSelect) {
+  if (!alunoSearch) return;
+
+  alunoSearch.addEventListener("input", () => {
+    if (alunoSelect) alunoSelect.value = "";
+    renderAlunoResults(buscarAlunosPorInicio(alunos, alunoSearch.value), onSelect);
+  });
+}
+
+function selecionarAlunoInicial(alunos, id, onSelect) {
+  if (!id) return;
+
+  const aluno = alunos.find((item) => item.id === id);
+  if (!aluno) return;
+
+  if (alunoSelect) alunoSelect.value = aluno.id;
+  if (alunoSearch) alunoSearch.value = alunoLabel(aluno);
+  onSelect(aluno);
 }
 
 function formToAluno(form) {
@@ -73,10 +449,16 @@ function formToAluno(form) {
     cpf: formData.get("cpf")?.trim(),
     data_nascimento: formData.get("data_nascimento") || null,
     plano: formData.get("plano")?.trim() || null,
-    validade_matricula: formData.get("validade_matricula") || null,
+    validade_matricula:
+      formData.get("validade_matricula") || calcularValidadeMatricula(formData.get("plano")) || null,
+    cep: formData.get("cep")?.trim() || null,
+    endereco: formData.get("endereco")?.trim() || null,
+    numero: formData.get("numero")?.trim() || null,
+    bairro: formData.get("bairro")?.trim() || null,
+    cidade: formData.get("cidade")?.trim() || null,
+    estado: formData.get("estado")?.trim().toUpperCase() || null,
+    complemento: formData.get("complemento")?.trim() || null,
     observacoes: formData.get("observacoes")?.trim() || null,
-    altura: formData.get("altura") ? Number(formData.get("altura")) : null,
-    peso: formData.get("peso") ? Number(formData.get("peso")) : null,
     status: formData.get("status") || "ATIVO",
   };
 }
@@ -84,77 +466,71 @@ function formToAluno(form) {
 function fillForm(aluno) {
   if (!alunoForm || !aluno) return;
 
-  ["nome_completo", "email", "telefone", "cpf", "data_nascimento", "plano", "validade_matricula", "observacoes", "altura", "peso", "status"].forEach((name) => {
+  ["nome_completo", "email", "telefone", "cpf", "data_nascimento", "plano", "validade_matricula", "cep", "endereco", "numero", "bairro", "cidade", "estado", "complemento", "observacoes", "status"].forEach((name) => {
     const field = alunoForm.elements[name];
     if (field) field.value = aluno[name] ?? "";
   });
 }
 
-function renderAlunos(alunos, mode) {
-  if (!alunosList) return;
-
-  if (alunos.length === 0) {
-    alunosList.innerHTML = `
-      <tr>
-        <td class="px-4 py-6 text-center text-slate-500" colspan="5">
-          Nenhum aluno cadastrado.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  alunosList.innerHTML = alunos
-    .map((aluno) => {
-      const action =
-        mode === "delete"
-          ? `<button class="delete-aluno font-bold text-red-600" data-id="${aluno.id}">Excluir</button>`
-          : `<a class="font-bold text-orange-700" href="/admin/editar-aluno.html?id=${aluno.id}">Editar</a>`;
-
-      return `
-        <tr>
-          <td class="px-4 py-3 font-semibold">${aluno.nome_completo ?? "-"}</td>
-          <td class="px-4 py-3">${aluno.email ?? "-"}</td>
-          <td class="px-4 py-3">${aluno.telefone ?? "-"}</td>
-          <td class="px-4 py-3">${aluno.status ?? "-"}</td>
-          <td class="px-4 py-3">${action}</td>
-        </tr>
-      `;
-    })
-    .join("");
-}
-
 async function setupCreate() {
+  atualizarValidadePreview();
+  setupCepLookup();
+  alunoForm?.elements.plano?.addEventListener("change", atualizarValidadePreview);
+
   alunoForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const aluno = formToAluno(alunoForm);
-    const { error } = await supabase.from("alunos").insert(aluno);
+    const formaPagamento = alunoForm.elements.forma_pagamento?.value;
+    const pagamentoConfirmado = alunoForm.elements.pagamento_confirmado?.checked;
+
+    if (!formaPagamento) {
+      showMessage("Selecione a forma de pagamento.", "error");
+      return;
+    }
+
+    if (!pagamentoConfirmado) {
+      showMessage("Confirme o pagamento inicial para cadastrar o aluno.", "error");
+      return;
+    }
+
+    const { data: novoAluno, error } = await supabase
+      .from("alunos")
+      .insert(aluno)
+      .select("id, validade_matricula")
+      .single();
 
     if (error) {
       showMessage(`Erro ao cadastrar aluno: ${error.message}`, "error");
       return;
     }
 
+    const { error: paymentError } = await registrarPagamentoMatricula({
+      alunoId: novoAluno.id,
+      plano: aluno.plano,
+      formaPagamento,
+      validadeNova: novoAluno.validade_matricula,
+      observacoes: "Pagamento inicial no cadastro do aluno.",
+    });
+
+    if (paymentError) {
+      showMessage(`Aluno cadastrado, mas houve erro ao registrar pagamento: ${paymentError.message}`, "error");
+      return;
+    }
+
     alunoForm.reset();
-    showMessage("Aluno cadastrado com sucesso.");
+    atualizarValidadePreview();
+    showMessage("Aluno cadastrado e pagamento inicial registrado com sucesso.");
   });
 }
 
 async function setupEdit() {
+  setupCepLookup();
   const alunos = await fillSelect();
-  renderAlunos(alunos, "edit");
+  setupAlunoSearch(alunos, fillForm);
 
   const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (id) {
-    alunoSelect.value = id;
-    fillForm(alunos.find((aluno) => aluno.id === id));
-  }
-
-  alunoSelect?.addEventListener("change", () => {
-    fillForm(alunos.find((aluno) => aluno.id === alunoSelect.value));
-  });
+  selecionarAlunoInicial(alunos, params.get("id"), fillForm);
 
   alunoForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -180,16 +556,30 @@ async function setupEdit() {
 
 async function setupDelete() {
   const alunos = await getAlunos();
-  renderAlunos(alunos, "delete");
 
-  alunosList?.addEventListener("click", async (event) => {
-    const button = event.target.closest(".delete-aluno");
-    if (!button) return;
+  if (emptyState) {
+    emptyState.classList.toggle("hidden", alunos.length > 0);
+  }
+
+  setupAlunoSearch(alunos, (aluno) => {
+    if (alunoSelected) {
+      alunoSelected.classList.remove("hidden");
+      alunoSelected.textContent = `${aluno.nome_completo ?? "-"} | ${alunoResumo(aluno)}`;
+    }
+
+    if (deleteAlunoButton) deleteAlunoButton.disabled = false;
+  });
+
+  deleteAlunoButton?.addEventListener("click", async () => {
+    if (!alunoSelect?.value) {
+      showMessage("Selecione um aluno para excluir.", "error");
+      return;
+    }
 
     const confirmed = window.confirm("Deseja excluir este aluno?");
     if (!confirmed) return;
 
-    const { error } = await supabase.from("alunos").delete().eq("id", button.dataset.id);
+    const { error } = await supabase.from("alunos").delete().eq("id", alunoSelect.value);
 
     if (error) {
       showMessage(`Erro ao excluir aluno: ${error.message}`, "error");
@@ -197,15 +587,18 @@ async function setupDelete() {
     }
 
     showMessage("Aluno excluido com sucesso.");
-    renderAlunos(await getAlunos(), "delete");
+    if (alunoSelect) alunoSelect.value = "";
+    if (alunoSearch) alunoSearch.value = "";
+    if (alunoResults) alunoResults.classList.add("hidden");
+    if (alunoSelected) alunoSelected.classList.add("hidden");
+    if (deleteAlunoButton) deleteAlunoButton.disabled = true;
   });
 }
 
 async function setupHistorico() {
   const alunos = await fillSelect();
 
-  alunoSelect?.addEventListener("change", () => {
-    const aluno = alunos.find((item) => item.id === alunoSelect.value);
+  const renderHistorico = (aluno) => {
     if (!aluno || !historyBox) return;
 
     const cadastradoEm = aluno.created_at
@@ -219,31 +612,92 @@ async function setupHistorico() {
       `Status: ${aluno.status ?? "-"}`,
       `Plano: ${aluno.plano ?? "-"}`,
       `Validade da matricula: ${aluno.validade_matricula ?? "-"}`,
-      `Altura: ${aluno.altura ?? "-"} m`,
-      `Peso: ${aluno.peso ?? "-"} kg`,
+      `CEP: ${aluno.cep ?? "-"}`,
+      `Endereco: ${aluno.endereco ?? "-"}`,
+      `Numero: ${aluno.numero ?? "-"}`,
+      `Bairro: ${aluno.bairro ?? "-"}`,
+      `Cidade: ${aluno.cidade ?? "-"}`,
+      `Estado: ${aluno.estado ?? "-"}`,
+      `Complemento: ${aluno.complemento ?? "-"}`,
       `Cadastrado em: ${cadastradoEm}`,
       `Observacoes: ${aluno.observacoes ?? "-"}`,
     ].join("\n");
-  });
+  };
+
+  setupAlunoSearch(alunos, renderHistorico);
+
+  const params = new URLSearchParams(window.location.search);
+  selecionarAlunoInicial(alunos, params.get("id"), renderHistorico);
 }
 
 async function setupRenew() {
-  await fillSelect();
+  const alunos = await fillSelect();
+  let alunoAtual = null;
+
+  atualizarRenovacaoPreview();
+  alunoForm?.elements.plano?.addEventListener("change", atualizarRenovacaoPreview);
+
+  setupAlunoSearch(alunos, (aluno) => {
+    alunoAtual = aluno;
+
+    if (alunoSelected) {
+      alunoSelected.classList.remove("hidden");
+      alunoSelected.textContent = [
+        `Aluno: ${aluno.nome_completo ?? "-"}`,
+        `Status atual: ${aluno.status ?? "-"}`,
+        `Vencimento atual: ${aluno.validade_matricula ? formatDateBR(aluno.validade_matricula) : "-"}`,
+      ].join(" | ");
+    }
+  });
 
   alunoForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    if (!alunoSelect.value) {
+    if (!alunoSelect.value || !alunoAtual) {
       showMessage("Selecione um aluno para renovar a matricula.", "error");
       return;
     }
 
-    const validade = alunoForm.elements.validade_matricula.value;
+    const plano = alunoForm.elements.plano.value;
+    const config = planos[plano];
+    const validade = calcularValidadeMatricula(plano);
+    const formaPagamento = alunoForm.elements.forma_pagamento.value;
+    const pagamentoConfirmado = alunoForm.elements.pagamento_confirmado.checked;
+
+    if (!config || !validade) {
+      showMessage("Selecione um plano para renovar a matricula.", "error");
+      return;
+    }
+
+    if (!formaPagamento) {
+      showMessage("Selecione a forma de pagamento.", "error");
+      return;
+    }
+
+    if (!pagamentoConfirmado) {
+      showMessage("Confirme o recebimento do pagamento para reativar o aluno.", "error");
+      return;
+    }
+
+    const { error: paymentError } = await registrarPagamentoMatricula({
+      alunoId: alunoSelect.value,
+      plano,
+      formaPagamento,
+      validadeAnterior: alunoAtual.validade_matricula || null,
+      validadeNova: validade,
+      observacoes: alunoForm.elements.observacoes_pagamento.value.trim() || null,
+    });
+
+    if (paymentError) {
+      showMessage(`Erro ao registrar pagamento: ${paymentError.message}`, "error");
+      return;
+    }
 
     const { error } = await supabase
       .from("alunos")
       .update({
         status: "ATIVO",
+        plano,
         validade_matricula: validade,
       })
       .eq("id", alunoSelect.value);
@@ -253,42 +707,32 @@ async function setupRenew() {
       return;
     }
 
-    showMessage("Matricula renovada com sucesso.");
-  });
-}
-
-async function setupPlano() {
-  await fillSelect();
-
-  alunoForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    if (!alunoSelect.value) {
-      showMessage("Selecione um aluno para vincular o plano.", "error");
-      return;
+    showMessage("Pagamento registrado e matricula reativada com sucesso.");
+    alunoAtual = {
+      ...alunoAtual,
+      plano,
+      status: "ATIVO",
+      validade_matricula: validade,
+    };
+    if (alunoSelected) {
+      alunoSelected.textContent = [
+        `Aluno: ${alunoAtual.nome_completo ?? "-"}`,
+        "Status atual: ATIVO",
+        `Vencimento atual: ${formatDateBR(validade)}`,
+      ].join(" | ");
     }
-
-    const plano = alunoForm.elements.plano.value.trim();
-    const { error } = await supabase.from("alunos").update({ plano }).eq("id", alunoSelect.value);
-
-    if (error) {
-      showMessage(`Erro ao vincular plano: ${error.message}`, "error");
-      return;
-    }
-
-    showMessage("Plano vinculado com sucesso.");
   });
 }
 
 async function setupPresenca() {
   const alunos = await fillSelect();
+  let alunoAtual = null;
 
-  alunoSelect?.addEventListener("change", () => {
-    const aluno = alunos.find((item) => item.id === alunoSelect.value);
-    if (!aluno || !presencaBox) return;
+  setupAlunoSearch(alunos, async (aluno) => {
+    alunoAtual = aluno;
+    if (!aluno) return;
 
-    presencaBox.textContent =
-      "A tabela alunos atual nao possui uma coluna para presencas. Quando criarmos a tabela de presencas, os registros aparecerao aqui.";
+    renderAcessos(aluno, await getAcessosAluno(aluno.id));
   });
 
   alunoForm?.addEventListener("submit", async (event) => {
@@ -299,16 +743,195 @@ async function setupPresenca() {
       return;
     }
 
-    showMessage("A presenca sera salva quando criarmos a tabela de presencas.", "error");
+    const resultado = await registrarAcessoCatraca(alunoSelect.value, "ADMIN");
+    if (!resultado) return;
+
+    if (resultado.liberado) {
+      showMessage("Liberado: catraca pode destravar.");
+    } else {
+      showMessage(`Bloqueado: ${resultado.motivo}`, "error");
+    }
+
+    const alunoAtualizado = {
+      ...alunoAtual,
+      status: resultado.liberado ? "ATIVO" : alunoAtual?.status,
+    };
+
+    if (!alunoAtualizado) {
+      return;
+    }
+
+    renderAcessos(alunoAtualizado, await getAcessosAluno(alunoSelect.value));
   });
 }
 
-await protectPage();
+async function getBloqueioAtivo(alunoId) {
+  const { data, error } = await supabase
+    .from("bloqueios_alunos")
+    .select("id, motivo, bloqueado_em")
+    .eq("aluno_id", alunoId)
+    .eq("ativo", true)
+    .order("bloqueado_em", { ascending: false })
+    .limit(1);
 
-if (page === "cadastrar-aluno") setupCreate();
-if (page === "editar-aluno") setupEdit();
-if (page === "excluir-aluno") setupDelete();
-if (page === "historico-aluno") setupHistorico();
-if (page === "renovar-matricula") setupRenew();
-if (page === "vincular-plano") setupPlano();
-if (page === "presenca-aluno") setupPresenca();
+  if (error) {
+    showMessage(`Erro ao buscar bloqueio: ${error.message}`, "error");
+    return null;
+  }
+
+  return data?.[0] ?? null;
+}
+
+async function renderBloqueioAluno(aluno) {
+  const bloqueio = await getBloqueioAtivo(aluno.id);
+
+  if (alunoSelected) {
+    alunoSelected.classList.remove("hidden");
+    alunoSelected.textContent = [
+      `Aluno: ${aluno.nome_completo ?? "-"}`,
+      `Status: ${aluno.status ?? "-"}`,
+      bloqueio ? `Bloqueio ativo: ${bloqueio.motivo}` : "Sem bloqueio manual ativo",
+    ].join(" | ");
+  }
+
+  if (bloquearAlunoButton) bloquearAlunoButton.disabled = false;
+  if (liberarAlunoButton) liberarAlunoButton.disabled = !bloqueio;
+}
+
+async function setupBlock() {
+  const alunos = await fillSelect();
+  let alunoAtual = null;
+
+  setupAlunoSearch(alunos, async (aluno) => {
+    alunoAtual = aluno;
+    await renderBloqueioAluno(aluno);
+  });
+
+  bloquearAlunoButton?.addEventListener("click", async () => {
+    if (!alunoSelect.value || !alunoAtual) {
+      showMessage("Selecione um aluno para bloquear.", "error");
+      return;
+    }
+
+    const motivo = alunoForm.elements.motivo_bloqueio.value.trim();
+    if (!motivo) {
+      showMessage("Informe o motivo do bloqueio.", "error");
+      return;
+    }
+
+    const { error } = await supabase.from("bloqueios_alunos").insert({
+      aluno_id: alunoSelect.value,
+      motivo,
+      ativo: true,
+    });
+
+    if (error) {
+      showMessage(`Erro ao bloquear aluno: ${error.message}`, "error");
+      return;
+    }
+
+    showMessage("Aluno bloqueado manualmente.");
+    alunoForm.elements.motivo_bloqueio.value = "";
+    await renderBloqueioAluno(alunoAtual);
+  });
+
+  liberarAlunoButton?.addEventListener("click", async () => {
+    if (!alunoSelect.value || !alunoAtual) {
+      showMessage("Selecione um aluno para liberar.", "error");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("bloqueios_alunos")
+      .update({ ativo: false })
+      .eq("aluno_id", alunoSelect.value)
+      .eq("ativo", true);
+
+    if (error) {
+      showMessage(`Erro ao liberar aluno: ${error.message}`, "error");
+      return;
+    }
+
+    showMessage("Bloqueio manual removido.");
+    await renderBloqueioAluno(alunoAtual);
+  });
+}
+
+function renderAlunoCards(alunos) {
+  if (!alunosCards) return;
+
+  alunosCards.innerHTML = "";
+
+  if (alunos.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500 sm:col-span-2";
+    empty.textContent = alunoSearch?.value.trim()
+      ? "Nenhum aluno encontrado com essas letras iniciais."
+      : "Digite as letras iniciais para buscar alunos cadastrados.";
+    alunosCards.append(empty);
+    return;
+  }
+
+  const historicoHref = (alunoId) =>
+    area === "professor"
+      ? `/professor/historico-aluno.html?id=${alunoId}`
+      : `/admin/historico-aluno.html?id=${alunoId}`;
+
+  const editarHref = (alunoId) => `/admin/editar-aluno.html?id=${alunoId}`;
+
+  alunos.forEach((aluno) => {
+    const card = document.createElement("article");
+    card.className = "rounded-md border border-slate-200 p-4";
+
+    const name = document.createElement("h2");
+    name.className = "text-base font-bold text-slate-950";
+    name.textContent = aluno.nome_completo ?? "Aluno sem nome";
+
+    const meta = document.createElement("p");
+    meta.className = "mt-2 text-sm text-slate-600";
+    meta.textContent = alunoResumo(aluno) || "Sem dados complementares.";
+
+    const actions = document.createElement("div");
+    actions.className = "mt-4 flex flex-wrap gap-2";
+    actions.innerHTML = area === "professor"
+      ? `
+        <a class="rounded-md bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700" href="${historicoHref(aluno.id)}">Historico</a>
+      `
+      : `
+        <a class="rounded-md bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700" href="${editarHref(aluno.id)}">Editar</a>
+        <a class="rounded-md border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50" href="${historicoHref(aluno.id)}">Historico</a>
+      `;
+
+    card.append(name, meta, actions);
+    alunosCards.append(card);
+  });
+}
+
+async function setupView() {
+  const alunos = await getAlunos();
+
+  if (emptyState) {
+    emptyState.classList.toggle("hidden", alunos.length > 0);
+  }
+
+  renderAlunoCards([]);
+
+  alunoSearch?.addEventListener("input", () => {
+    renderAlunoCards(buscarAlunosPorInicio(alunos, alunoSearch.value));
+  });
+}
+
+const canAccessPage = await protectPage();
+
+if (canAccessPage) {
+  await desativarMatriculasVencidas();
+
+  if (page === "cadastrar-aluno") setupCreate();
+  if (page === "ver-alunos") setupView();
+  if (page === "editar-aluno") setupEdit();
+  if (page === "excluir-aluno") setupDelete();
+  if (page === "historico-aluno") setupHistorico();
+  if (page === "renovar-matricula") setupRenew();
+  if (page === "presenca-aluno") setupPresenca();
+  if (page === "bloquear-aluno") setupBlock();
+}

@@ -14,10 +14,26 @@ function showMessage(text, type = "error") {
       : "mt-4 text-center text-sm font-semibold text-red-600";
 }
 
+async function getRedirectByProfile() {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+
+  if (!user) return "/";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tipo_usuario")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.tipo_usuario === "PROFESSOR") return "/professor/menu.html";
+  return "/admin/menu.html";
+}
+
 const { data } = await supabase.auth.getSession();
 
 if (data.session) {
-  window.location.href = "/admin/menu.html";
+  window.location.href = await getRedirectByProfile();
 }
 
 form.addEventListener("submit", async (event) => {
@@ -45,5 +61,5 @@ form.addEventListener("submit", async (event) => {
   }
 
   showMessage("Login realizado com sucesso.", "success");
-  window.location.href = "/admin/menu.html";
+  window.location.href = await getRedirectByProfile();
 });
