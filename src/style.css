@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@layer components {
+  .label-form {
+    @apply block text-sm font-medium text-slate-700 dark:text-slate-200;
+  }
+}
