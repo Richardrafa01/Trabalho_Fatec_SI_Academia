@@ -374,7 +374,7 @@ function setupCreate() {
     showMessage(
       acesso?.email_sent
         ? "Funcionario cadastrado, acesso criado e e-mail enviado."
-        : `Funcionario cadastrado e acesso criado. Senha inicial: ${acesso?.default_password ?? "Professor@123"}`,
+        : `Funcionario cadastrado e acesso criado. Senha inicial: ${acesso?.default_password ?? "configurada no sistema"}`,
     );
   });
 }
@@ -447,7 +447,7 @@ async function setupEdit() {
     showMessage(
       acesso?.email_sent
         ? "Acesso criado e e-mail enviado ao funcionario."
-        : `Acesso criado. Senha inicial: ${acesso?.default_password ?? "Professor@123"}`,
+        : `Acesso criado. Senha inicial: ${acesso?.default_password ?? "configurada no sistema"}`,
     );
 
     professores = await fillSelect();

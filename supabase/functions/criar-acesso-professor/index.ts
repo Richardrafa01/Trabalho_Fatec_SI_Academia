@@ -21,11 +21,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const defaultPassword = Deno.env.get("DEFAULT_FUNCIONARIO_PASSWORD") ?? Deno.env.get("DEFAULT_PROFESSOR_PASSWORD") ?? "Professor@123";
+    const defaultPassword = Deno.env.get("DEFAULT_FUNCIONARIO_PASSWORD") ?? Deno.env.get("DEFAULT_PROFESSOR_PASSWORD");
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:5173";
 
-    if (!supabaseUrl || !serviceRoleKey) {
-      throw new Error("Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY na Edge Function.");
+    if (!supabaseUrl || !serviceRoleKey || !defaultPassword) {
+      throw new Error("Configure as variaveis obrigatorias da Edge Function.");
     }
 
     const authHeader = req.headers.get("Authorization");
