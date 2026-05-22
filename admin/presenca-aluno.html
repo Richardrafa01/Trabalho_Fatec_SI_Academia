@@ -8,24 +8,25 @@
   </head>
   <body class="min-h-screen bg-slate-100 font-sans text-slate-900" data-page="presenca-aluno">
     <main class="mx-auto max-w-4xl px-4 py-8">
-      <a class="text-sm font-bold text-orange-700 hover:underline" href="/admin/menu.html#alunos">Voltar ao Menu Admin</a>
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="/admin/menu.html#alunos">Voltar ao painel</a>
       <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
         <h1 class="text-2xl font-bold text-slate-950">Presenca do aluno</h1>
-        <p class="mt-1 text-sm text-slate-600">Consulte acessos e simule a leitura da catraca.</p>
+        <p class="mt-1 text-sm text-slate-600">Registre a entrada do aluno.</p>
         <p id="message" class="mt-5 hidden"></p>
         <p id="empty-state" class="mt-5 hidden rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500">Nenhum aluno cadastrado.</p>
         <form id="aluno-form" class="mt-6 grid gap-4">
           <div>
             <label class="mb-2 block text-sm font-bold text-slate-700" for="aluno-id">Aluno</label>
             <input id="aluno-id" type="hidden" />
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="aluno-search" autocomplete="off" placeholder="Digite as letras iniciais do aluno" />
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="aluno-search" autocomplete="off" placeholder="Buscar por nome" />
             <div id="aluno-results" class="mt-2 hidden overflow-hidden rounded-md border border-slate-200 bg-white"></div>
           </div>
-          <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700" type="submit">Simular entrada pela catraca</button>
+          <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700" type="submit">Registrar entrada pela catraca</button>
         </form>
         <pre id="presenca-box" class="mt-5 min-h-40 whitespace-pre-wrap rounded-md bg-slate-100 p-4 text-sm text-slate-700">Selecione um aluno para ver os acessos.</pre>
       </section>
     </main>
+    <script type="module" src="/src/admin-theme.js"></script>
     <script type="module" src="/src/alunos.js"></script>
   </body>
 </html>

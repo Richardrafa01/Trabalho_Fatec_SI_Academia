@@ -1,17 +1,94 @@
 @import "tailwindcss";
 
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-900 antialiased;
+  }
+
+  ::selection {
+    @apply bg-orange-200 text-slate-950;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-4 ring-orange-600/20;
+  }
+}
+
 @layer components {
   .label-form {
     @apply block text-sm font-medium text-slate-700 dark:text-slate-200;
   }
+
+  .app-context-nav {
+    @apply sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur;
+  }
+
+  .app-context-nav-inner {
+    @apply mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between;
+  }
+
+  .app-context-nav-title {
+    @apply text-xs font-bold uppercase tracking-wider text-orange-600;
+  }
+
+  .app-context-nav-subtitle {
+    @apply mt-1 text-base font-bold text-slate-950;
+  }
+
+  .app-context-nav-links {
+    @apply flex gap-2 overflow-x-auto pb-1 text-sm font-bold lg:pb-0;
+  }
+
+  .app-context-nav-links a {
+    @apply whitespace-nowrap rounded-md border border-slate-200 bg-white px-3 py-2 text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700;
+  }
+
+  .app-context-nav-links a[aria-current="page"] {
+    @apply border-orange-300 bg-orange-50 text-orange-700;
+  }
 }
 
 @layer utilities {
+  main > a:first-child {
+    @apply inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700;
+  }
+
+  main > section,
+  main section.bg-white,
+  article.bg-white {
+    @apply border border-slate-200/80 shadow-sm;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply bg-white text-slate-900 transition placeholder:text-slate-400;
+  }
+
+  button,
+  a {
+    @apply transition;
+  }
+
+  table {
+    @apply overflow-hidden rounded-md;
+  }
+
+  thead {
+    @apply border-b border-slate-200;
+  }
+
   body.professor-theme-black {
     @apply bg-zinc-950 text-zinc-100;
   }
 
   body.professor-theme-black header,
+  body.professor-theme-black .app-context-nav,
+  body.professor-theme-black .app-context-nav-links a,
   body.professor-theme-black section,
   body.professor-theme-black article,
   body.professor-theme-black .bg-white {
@@ -23,8 +100,27 @@
   }
 
   body.professor-theme-black .bg-slate-100,
-  body.professor-theme-black .bg-slate-50 {
+  body.professor-theme-black .bg-slate-50,
+  body.professor-theme-black .bg-orange-50,
+  body.professor-theme-black .bg-emerald-50,
+  body.professor-theme-black .bg-red-50 {
     @apply bg-zinc-800;
+  }
+
+  body.professor-theme-black .app-context-nav-links a[aria-current="page"] {
+    @apply border-orange-500 bg-zinc-800 text-orange-300;
+  }
+
+  body.professor-theme-black .app-context-nav-subtitle {
+    @apply text-zinc-100;
+  }
+
+  body.professor-theme-black main > a:first-child {
+    @apply border-zinc-700 bg-zinc-900 text-zinc-100 shadow-none;
+  }
+
+  body.professor-theme-black main > a:first-child:hover {
+    @apply border-orange-500 bg-zinc-800 text-orange-300;
   }
 
   body.professor-theme-black .text-slate-950,
@@ -42,6 +138,7 @@
 
   body.professor-theme-black .border-slate-300,
   body.professor-theme-black .border-slate-200,
+  body.professor-theme-black .border-slate-100,
   body.professor-theme-black .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
     @apply border-zinc-700;
   }
@@ -49,7 +146,8 @@
   body.professor-theme-black input,
   body.professor-theme-black select,
   body.professor-theme-black textarea,
-  body.professor-theme-black pre {
+  body.professor-theme-black pre,
+  body.professor-theme-black table {
     @apply border-zinc-700 bg-zinc-950 text-zinc-100;
   }
 

@@ -11,6 +11,7 @@ const professorSelected = document.querySelector("#professor-selected");
 const deleteProfessorButton = document.querySelector("#delete-professor-button");
 const createAccessButton = document.querySelector("#create-access-button");
 const professoresCards = document.querySelector("#professores-cards");
+const backofficeRoles = ["ADMIN", "GERENTE"];
 
 function showMessage(text, type = "success") {
   if (!message) return;
@@ -39,7 +40,7 @@ async function protectPage() {
     return false;
   }
 
-  if (profile?.tipo_usuario !== "ADMIN" || profile?.status === "INATIVO") {
+  if (!backofficeRoles.includes(profile?.tipo_usuario) || profile?.status === "INATIVO") {
     await supabase.auth.signOut();
     window.location.href = "/";
     return false;
@@ -60,7 +61,7 @@ async function getProfessores({ ativosOnly = false } = {}) {
   const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
-    showMessage(`Erro ao buscar professores: ${error.message}`, "error");
+    showMessage("Nao foi possivel carregar os funcionarios. Tente novamente.", "error");
     return [];
   }
 
@@ -69,7 +70,8 @@ async function getProfessores({ ativosOnly = false } = {}) {
 
 function professorLabel(professor) {
   const status = professor.status ? ` - ${professor.status}` : "";
-  return `${professor.nome_completo ?? "Professor sem nome"}${professor.email ? ` - ${professor.email}` : ""}${status}`;
+  const cargo = professor.cargo ? ` - ${professor.cargo}` : "";
+  return `${professor.nome_completo ?? "Funcionario sem nome"}${cargo}${professor.email ? ` - ${professor.email}` : ""}${status}`;
 }
 
 function normalizeText(value) {
@@ -82,13 +84,27 @@ function normalizeText(value) {
 
 function professorResumo(professor) {
   return [
+    professor.cargo,
+    professor.perfil_acesso ? `Perfil: ${perfilLabel(professor.perfil_acesso)}` : null,
     professor.email,
     professor.telefone,
-    professor.especialidade ? `Especialidade: ${professor.especialidade}` : null,
+    professor.especialidade ? `Area: ${professor.especialidade}` : null,
     professor.status ? `Status: ${professor.status}` : null,
   ]
     .filter(Boolean)
     .join(" | ");
+}
+
+function perfilLabel(perfil) {
+  const labels = {
+    ADMIN: "Admin",
+    GERENTE: "Gerente",
+    ADMINISTRATIVO: "Administrativo",
+    RECEPCAO: "Recepcao",
+    PROFESSOR: "Professor",
+  };
+
+  return labels[perfil] ?? perfil ?? "-";
 }
 
 function buscarProfessoresPorInicio(professores, term) {
@@ -113,7 +129,7 @@ function renderProfessorResults(professores, onSelect) {
   if (professores.length === 0) {
     const empty = document.createElement("p");
     empty.className = "px-4 py-3 text-sm text-slate-500";
-    empty.textContent = "Nenhum professor encontrado com essas letras iniciais.";
+    empty.textContent = "Nenhum funcionario encontrado.";
     professorResults.append(empty);
     professorResults.classList.remove("hidden");
     return;
@@ -126,7 +142,7 @@ function renderProfessorResults(professores, onSelect) {
 
     const name = document.createElement("strong");
     name.className = "block text-slate-950";
-    name.textContent = professor.nome_completo ?? "Professor sem nome";
+    name.textContent = professor.nome_completo ?? "Funcionario sem nome";
 
     const meta = document.createElement("span");
     meta.className = "mt-1 block text-xs text-slate-500";
@@ -159,7 +175,7 @@ async function fillSelect() {
   if (!professorSelect) return [];
 
   const professores = await getProfessores();
-  professorSelect.innerHTML = '<option value="">Selecione um professor</option>';
+  professorSelect.innerHTML = '<option value="">Selecione um funcionario</option>';
 
   professores.forEach((professor) => {
     const option = document.createElement("option");
@@ -183,7 +199,7 @@ function renderProfessorCards(professores) {
   if (!professores.length) {
     professoresCards.innerHTML = `
       <div class="rounded-md border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500 sm:col-span-2">
-        Nenhum professor ativo encontrado.
+        Nenhum funcionario ativo encontrado.
       </div>
     `;
     return;
@@ -202,7 +218,15 @@ function renderProfessorCards(professores) {
       </div>
       <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt class="font-bold text-slate-500">Especialidade</dt>
+          <dt class="font-bold text-slate-500">Cargo</dt>
+          <dd class="mt-1 text-slate-800" data-field="cargo"></dd>
+        </div>
+        <div>
+          <dt class="font-bold text-slate-500">Perfil</dt>
+          <dd class="mt-1 text-slate-800" data-field="perfil"></dd>
+        </div>
+        <div>
+          <dt class="font-bold text-slate-500">Area</dt>
           <dd class="mt-1 text-slate-800" data-field="especialidade"></dd>
         </div>
         <div>
@@ -223,8 +247,10 @@ function renderProfessorCards(professores) {
       </a>
     `;
 
-    card.querySelector("h2").textContent = professor.nome_completo ?? "Professor sem nome";
+    card.querySelector("h2").textContent = professor.nome_completo ?? "Funcionario sem nome";
     card.querySelector("p").textContent = professor.email ?? "Sem e-mail";
+    card.querySelector('[data-field="cargo"]').textContent = professor.cargo ?? "Professor de musculacao";
+    card.querySelector('[data-field="perfil"]').textContent = perfilLabel(professor.perfil_acesso ?? "PROFESSOR");
     card.querySelector('[data-field="especialidade"]').textContent = professor.especialidade ?? "Nao informado";
     card.querySelector('[data-field="telefone"]').textContent = professor.telefone ?? "Sem telefone";
     card.querySelector('[data-field="cref"]').textContent = professor.cref ?? "Nao informado";
@@ -263,6 +289,8 @@ function formToProfessor(form) {
     telefone: formData.get("telefone")?.trim() || null,
     cpf: formData.get("cpf")?.trim(),
     data_nascimento: formData.get("data_nascimento") || null,
+    cargo: formData.get("cargo") || "Professor de musculacao",
+    perfil_acesso: formData.get("perfil_acesso") || "PROFESSOR",
     especialidade: formData.get("especialidade")?.trim(),
     cref: formData.get("cref")?.trim() || null,
     valor_hora: formData.get("valor_hora") ? Number(formData.get("valor_hora")) : null,
@@ -274,7 +302,7 @@ function formToProfessor(form) {
 
 async function accessErrorMessage(accessError, acesso) {
   if (accessError?.message?.includes("Failed to send a request")) {
-    return "nao foi possivel chamar a Edge Function criar-acesso-professor. Publique a funcao no Supabase e confira os secrets SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.";
+    return "nao foi possivel criar o acesso automaticamente. Tente novamente ou acione o suporte tecnico.";
   }
 
   if (accessError?.context) {
@@ -284,14 +312,14 @@ async function accessErrorMessage(accessError, acesso) {
     } catch {
       try {
         const text = await accessError.context.text();
-        if (text) return text;
+        if (text) return "nao foi possivel criar o acesso automaticamente. Tente novamente ou acione o suporte tecnico.";
       } catch {
-        return accessError.message;
+        return "nao foi possivel criar o acesso automaticamente. Tente novamente ou acione o suporte tecnico.";
       }
     }
   }
 
-  return accessError?.message ?? acesso?.error ?? "erro desconhecido.";
+  return acesso?.error ?? "nao foi possivel criar o acesso automaticamente. Tente novamente ou acione o suporte tecnico.";
 }
 
 async function criarAcessoProfessor(professor) {
@@ -300,6 +328,8 @@ async function criarAcessoProfessor(professor) {
       professor_id: professor.id,
       nome_completo: professor.nome_completo,
       email: professor.email,
+      perfil_acesso: professor.perfil_acesso,
+      cargo: professor.cargo,
     },
   });
 
@@ -322,11 +352,11 @@ function setupCreate() {
     const { data: novoProfessor, error } = await supabase
       .from("professores")
       .insert(professor)
-      .select("id, nome_completo, email")
+      .select("id, nome_completo, email, cargo, perfil_acesso")
       .single();
 
     if (error) {
-      showMessage(`Erro ao cadastrar professor: ${error.message}`, "error");
+      showMessage("Nao foi possivel cadastrar o funcionario. Confira os dados e tente novamente.", "error");
       return;
     }
 
@@ -334,7 +364,7 @@ function setupCreate() {
 
     if (accessError) {
       showMessage(
-        `Professor cadastrado, mas o acesso nao foi criado: ${accessError}`,
+        `Funcionario cadastrado, mas o acesso nao foi criado: ${accessError}`,
         "error",
       );
       return;
@@ -343,8 +373,8 @@ function setupCreate() {
     professorForm.reset();
     showMessage(
       acesso?.email_sent
-        ? "Professor cadastrado, acesso criado e e-mail enviado."
-        : `Professor cadastrado e acesso criado. Senha temporaria: ${acesso?.default_password ?? "Professor@123"}`,
+        ? "Funcionario cadastrado, acesso criado e e-mail enviado."
+        : `Funcionario cadastrado e acesso criado. Senha inicial: ${acesso?.default_password ?? "Professor@123"}`,
     );
   });
 }
@@ -358,6 +388,8 @@ function fillForm(professor) {
     "telefone",
     "cpf",
     "data_nascimento",
+    "cargo",
+    "perfil_acesso",
     "especialidade",
     "cref",
     "valor_hora",
@@ -389,7 +421,7 @@ async function setupEdit() {
 
   createAccessButton?.addEventListener("click", async () => {
     if (!professorSelect?.value || !professorAtual) {
-      showMessage("Selecione um professor para criar o acesso.", "error");
+      showMessage("Selecione um funcionario para criar o acesso.", "error");
       return;
     }
 
@@ -414,8 +446,8 @@ async function setupEdit() {
 
     showMessage(
       acesso?.email_sent
-        ? "Acesso criado e e-mail enviado ao professor."
-        : `Acesso criado. Senha temporaria: ${acesso?.default_password ?? "Professor@123"}`,
+        ? "Acesso criado e e-mail enviado ao funcionario."
+        : `Acesso criado. Senha inicial: ${acesso?.default_password ?? "Professor@123"}`,
     );
 
     professores = await fillSelect();
@@ -427,7 +459,7 @@ async function setupEdit() {
     event.preventDefault();
 
     if (!professorSelect.value) {
-      showMessage("Selecione um professor para editar.", "error");
+      showMessage("Selecione um funcionario para editar.", "error");
       return;
     }
 
@@ -440,7 +472,7 @@ async function setupEdit() {
       .eq("id", professorSelect.value);
 
     if (error) {
-      showMessage(`Erro ao editar professor: ${error.message}`, "error");
+      showMessage("Nao foi possivel atualizar o funcionario. Tente novamente.", "error");
       return;
     }
 
@@ -451,19 +483,20 @@ async function setupEdit() {
           nome: professor.nome_completo,
           nome_completo: professor.nome_completo,
           email: professor.email,
+          tipo_usuario: professor.perfil_acesso,
           status: professor.status,
           updated_at: new Date().toISOString(),
         })
         .eq("id", professorSalvo.profile_id);
 
       if (profileError) {
-        showMessage(`Professor atualizado, mas o acesso nao foi sincronizado: ${profileError.message}`, "error");
+        showMessage("Funcionario atualizado, mas nao foi possivel sincronizar o acesso. Tente novamente.", "error");
         return;
       }
     }
 
     const selectedId = professorSelect.value;
-    showMessage("Professor atualizado com sucesso.");
+    showMessage("Funcionario atualizado com sucesso.");
     professores = await fillSelect();
     professorSelect.value = selectedId;
     professorAtual = professores.find((professor) => professor.id === selectedId);
@@ -492,11 +525,11 @@ async function setupDelete() {
 
   deleteProfessorButton?.addEventListener("click", async () => {
     if (!professorSelect?.value || !professorAtual) {
-      showMessage("Selecione um professor para excluir.", "error");
+      showMessage("Selecione um funcionario para excluir.", "error");
       return;
     }
 
-    const confirmed = window.confirm("Deseja excluir este professor? O acesso dele tambem sera desativado.");
+    const confirmed = window.confirm("Deseja excluir este funcionario? O acesso dele tambem sera desativado.");
     if (!confirmed) return;
 
     if (professorAtual.profile_id) {
@@ -509,7 +542,7 @@ async function setupDelete() {
         .eq("id", professorAtual.profile_id);
 
       if (profileError) {
-        showMessage(`Erro ao desativar acesso do professor: ${profileError.message}`, "error");
+        showMessage("Nao foi possivel desativar o acesso do funcionario. Tente novamente.", "error");
         return;
       }
     }
@@ -520,11 +553,11 @@ async function setupDelete() {
       .eq("id", professorSelect.value);
 
     if (error) {
-      showMessage(`Erro ao excluir professor: ${error.message}`, "error");
+      showMessage("Nao foi possivel remover o funcionario. Tente novamente.", "error");
       return;
     }
 
-    showMessage("Professor excluido e acesso desativado com sucesso.");
+    showMessage("Funcionario excluido e acesso desativado com sucesso.");
     if (professorSelect) professorSelect.value = "";
     if (professorSearch) professorSearch.value = "";
     if (professorResults) professorResults.classList.add("hidden");

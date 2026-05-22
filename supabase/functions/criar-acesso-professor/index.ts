@@ -9,6 +9,8 @@ type Payload = {
   professor_id: string;
   email: string;
   nome_completo: string;
+  perfil_acesso?: string;
+  cargo?: string;
 };
 
 Deno.serve(async (req) => {
@@ -19,7 +21,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const defaultPassword = Deno.env.get("DEFAULT_PROFESSOR_PASSWORD") ?? "Professor@123";
+    const defaultPassword = Deno.env.get("DEFAULT_FUNCIONARIO_PASSWORD") ?? Deno.env.get("DEFAULT_PROFESSOR_PASSWORD") ?? "Professor@123";
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:5173";
 
     if (!supabaseUrl || !serviceRoleKey) {
@@ -45,13 +47,14 @@ Deno.serve(async (req) => {
       .eq("id", requesterData.user.id)
       .maybeSingle();
 
-    if (requesterProfile && requesterProfile.tipo_usuario !== "ADMIN") {
-      return json({ error: "Apenas administradores podem criar acesso de professor." }, 403);
+    if (requesterProfile && !["ADMIN", "GERENTE"].includes(requesterProfile.tipo_usuario)) {
+      return json({ error: "Apenas administradores e gerentes podem criar acesso de funcionario." }, 403);
     }
 
     const payload = await req.json() as Payload;
     const email = payload.email?.trim().toLowerCase();
     const nomeCompleto = payload.nome_completo?.trim();
+    const perfilAcesso = normalizePerfilAcesso(payload.perfil_acesso);
 
     if (!payload.professor_id || !email || !nomeCompleto) {
       return json({ error: "Dados obrigatorios ausentes." }, 400);
@@ -62,7 +65,7 @@ Deno.serve(async (req) => {
       password: defaultPassword,
       email_confirm: true,
       user_metadata: {
-        tipo_usuario: "PROFESSOR",
+        tipo_usuario: perfilAcesso,
         nome_completo: nomeCompleto,
         precisa_trocar_senha: true,
       },
@@ -90,7 +93,7 @@ Deno.serve(async (req) => {
         password: defaultPassword,
         email_confirm: true,
         user_metadata: {
-          tipo_usuario: "PROFESSOR",
+          tipo_usuario: perfilAcesso,
           nome_completo: nomeCompleto,
           precisa_trocar_senha: true,
         },
@@ -106,7 +109,7 @@ Deno.serve(async (req) => {
       nome: nomeCompleto,
       nome_completo: nomeCompleto,
       email,
-      tipo_usuario: "PROFESSOR",
+      tipo_usuario: perfilAcesso,
       precisa_trocar_senha: true,
       status: "ATIVO",
       updated_at: new Date().toISOString(),
@@ -120,6 +123,8 @@ Deno.serve(async (req) => {
       .from("professores")
       .update({
         profile_id: userId,
+        perfil_acesso: perfilAcesso,
+        cargo: payload.cargo ?? "Funcionario",
         acesso_criado: true,
         acesso_criado_em: new Date().toISOString(),
       })
@@ -171,7 +176,7 @@ async function sendAccessEmail({
     body: JSON.stringify({
       from,
       to,
-      subject: "Seu acesso de professor foi criado",
+      subject: "Seu acesso ao sistema da academia foi criado",
       html: `
         <p>Ola, ${nomeCompleto}.</p>
         <p>Seu acesso ao sistema da academia foi criado.</p>
@@ -194,4 +199,10 @@ function json(body: unknown, status = 200) {
       "Content-Type": "application/json",
     },
   });
+}
+
+function normalizePerfilAcesso(value?: string) {
+  const perfil = value?.trim().toUpperCase();
+  const allowed = ["ADMIN", "GERENTE", "ADMINISTRATIVO", "RECEPCAO", "PROFESSOR"];
+  return allowed.includes(perfil ?? "") ? (perfil as string) : "PROFESSOR";
 }

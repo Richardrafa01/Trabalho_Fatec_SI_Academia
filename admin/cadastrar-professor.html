@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cadastrar Professor - Academia Pro</title>
+    <title>Cadastrar Funcionario - Academia Pro</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body class="min-h-screen bg-slate-100 font-sans text-slate-900" data-page="cadastrar-professor">
     <main class="mx-auto max-w-4xl px-4 py-8">
-      <a class="text-sm font-bold text-orange-700 hover:underline" href="/admin/menu.html#professores">Voltar ao Menu Admin</a>
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="/admin/menu.html#professores">Voltar ao painel</a>
       <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
-        <h1 class="text-2xl font-bold text-slate-950">Cadastrar professor</h1>
-        <p class="mt-1 text-sm text-slate-600">Os dados serao salvos na tabela professores do Supabase.</p>
+        <h1 class="text-2xl font-bold text-slate-950">Cadastrar funcionario</h1>
+        <p class="mt-1 text-sm text-slate-600">Cadastre um funcionario da academia.</p>
         <p id="message" class="mt-5 hidden"></p>
 
         <form id="professor-form" class="mt-6 grid gap-4 sm:grid-cols-2">
@@ -43,6 +43,27 @@
             </select>
           </div>
           <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cargo">Cargo</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cargo" name="cargo" required>
+              <option value="Professor de musculacao">Professor de musculacao</option>
+              <option value="Personal trainer">Personal trainer</option>
+              <option value="Avaliador fisico">Avaliador fisico</option>
+              <option value="Recepcionista">Recepcionista</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Gerente">Gerente</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="perfil_acesso">Perfil de acesso</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="perfil_acesso" name="perfil_acesso" required>
+              <option value="PROFESSOR">Professor</option>
+              <option value="RECEPCAO">Recepcao</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="GERENTE">Gerente</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div>
             <label class="mb-2 block text-sm font-bold text-slate-700" for="especialidade">Especialidade</label>
             <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="especialidade" name="especialidade" placeholder="Ex: Musculacao" required />
           </div>
@@ -56,18 +77,19 @@
           </div>
           <div>
             <label class="mb-2 block text-sm font-bold text-slate-700" for="horarios">Horarios</label>
-            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="horarios" name="horarios" placeholder="Ex: Seg a Sex, 08h as 14h" />
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="horarios" name="horarios" placeholder="Ex: Seg a Sex" />
           </div>
           <div class="sm:col-span-2">
             <label class="mb-2 block text-sm font-bold text-slate-700" for="observacoes">Observacoes</label>
             <textarea class="min-h-28 w-full rounded-md border border-slate-300 p-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="observacoes" name="observacoes"></textarea>
           </div>
           <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700 sm:col-span-2" type="submit">
-            Salvar professor
+            Salvar funcionario
           </button>
         </form>
       </section>
     </main>
+    <script type="module" src="/src/admin-theme.js"></script>
     <script type="module" src="/src/professores.js"></script>
   </body>
 </html>

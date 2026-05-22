@@ -3,12 +3,19 @@ create table if not exists profiles (
   nome varchar(150),
   nome_completo varchar(150) not null,
   email varchar(150) unique not null,
-  tipo_usuario varchar(20) not null check (tipo_usuario in ('ADMIN', 'PROFESSOR', 'ALUNO')),
+  tipo_usuario varchar(30) not null check (tipo_usuario in ('ADMIN', 'GERENTE', 'ADMINISTRATIVO', 'RECEPCAO', 'PROFESSOR', 'ALUNO')),
   precisa_trocar_senha boolean not null default true,
   status varchar(20) not null default 'ATIVO',
   created_at timestamp default now(),
   updated_at timestamp default now()
 );
+
+alter table profiles
+drop constraint if exists profiles_tipo_usuario_check;
+
+alter table profiles
+add constraint profiles_tipo_usuario_check
+check (tipo_usuario in ('ADMIN', 'GERENTE', 'ADMINISTRATIVO', 'RECEPCAO', 'PROFESSOR', 'ALUNO'));
 
 alter table profiles enable row level security;
 
@@ -39,7 +46,9 @@ with check (true);
 
 alter table professores
 add column if not exists acesso_criado boolean not null default false,
-add column if not exists acesso_criado_em timestamp;
+add column if not exists acesso_criado_em timestamp,
+add column if not exists cargo varchar(80) not null default 'Professor de musculacao',
+add column if not exists perfil_acesso varchar(30) not null default 'PROFESSOR';
 
 alter table alunos
 add column if not exists acesso_criado boolean not null default false,

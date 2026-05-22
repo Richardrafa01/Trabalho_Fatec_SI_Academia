@@ -14,19 +14,18 @@ const themeDark = document.querySelector("#theme-dark");
 const personalDataButton = document.querySelector("#personal-data-button");
 const personalDataSection = document.querySelector("#personal-data-section");
 const closePersonalData = document.querySelector("#close-personal-data");
-const professorFields = {
-  nome: document.querySelector("#professor-nome"),
-  email: document.querySelector("#professor-email"),
-  telefone: document.querySelector("#professor-telefone"),
-  cpf: document.querySelector("#professor-cpf"),
-  especialidade: document.querySelector("#professor-especialidade"),
-  cref: document.querySelector("#professor-cref"),
-  horarios: document.querySelector("#professor-horarios"),
-  status: document.querySelector("#professor-status"),
-  created: document.querySelector("#professor-created"),
+const adminFields = {
+  nome: document.querySelector("#admin-nome"),
+  email: document.querySelector("#admin-email"),
+  tipo: document.querySelector("#admin-tipo"),
+  trocarSenha: document.querySelector("#admin-trocar-senha"),
+  status: document.querySelector("#admin-status"),
+  created: document.querySelector("#admin-created"),
+  updated: document.querySelector("#admin-updated"),
 };
 
 const { data } = await supabase.auth.getSession();
+let currentProfile = null;
 
 if (!data.session) {
   window.location.href = "/";
@@ -45,6 +44,10 @@ function setText(element, value) {
   if (element) element.textContent = value ?? "-";
 }
 
+function formatDate(value) {
+  return value ? new Date(value).toLocaleString("pt-BR") : "-";
+}
+
 function applyTheme(theme) {
   const isDark = theme === "black";
   document.body.classList.toggle("professor-theme-black", isDark);
@@ -56,7 +59,7 @@ function applyTheme(theme) {
   themeDark?.classList.toggle("ring-orange-600/20", isDark);
 }
 
-const savedTheme = localStorage.getItem("professor-theme") ?? "light";
+const savedTheme = localStorage.getItem("admin-theme") ?? "light";
 applyTheme(savedTheme);
 
 async function protectAndLoadProfile() {
@@ -64,7 +67,7 @@ async function protectAndLoadProfile() {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("nome, nome_completo, email, tipo_usuario, status")
+    .select("nome, nome_completo, email, tipo_usuario, precisa_trocar_senha, status, created_at, updated_at")
     .eq("id", data.session.user.id)
     .maybeSingle();
 
@@ -73,67 +76,51 @@ async function protectAndLoadProfile() {
     return;
   }
 
-  if (profile?.tipo_usuario !== "PROFESSOR") {
-    window.location.href = "/admin/menu.html";
+  if (profile?.tipo_usuario === "PROFESSOR") {
+    window.location.href = "/professor/menu.html";
     return;
   }
 
-  if (profile.status === "INATIVO") {
+  if (profile?.tipo_usuario !== "ADMIN" || profile.status === "INATIVO") {
     await supabase.auth.signOut();
     window.location.href = "/";
     return;
   }
 
+  currentProfile = profile;
+
   setText(profileName, profile.nome_completo || profile.nome);
   setText(profileEmail, profile.email || data.session.user.email);
-  setText(profileType, "Professor");
+  setText(profileType, "Administrador");
   setText(profileStatus, profile.status === "INATIVO" ? "Inativo" : "Ativo");
 }
 
 await protectAndLoadProfile();
 
-async function loadPersonalData() {
-  if (!data.session) return;
-
-  const { data: professor, error } = await supabase
-    .from("professores")
-    .select("nome_completo, email, telefone, cpf, especialidade, cref, horarios, status, created_at")
-    .eq("profile_id", data.session.user.id)
-    .maybeSingle();
-
-  if (error) {
-    showMessage("Nao foi possivel carregar seus dados pessoais. Tente novamente.", "error");
+function loadPersonalData() {
+  if (!currentProfile) {
+    showMessage("Nenhum perfil de administrador encontrado.", "error");
     return;
   }
 
-  if (!professor) {
-    showMessage("Nenhum cadastro de professor vinculado a este acesso.", "error");
-    return;
-  }
-
-  setText(professorFields.nome, professor.nome_completo);
-  setText(professorFields.email, professor.email);
-  setText(professorFields.telefone, professor.telefone || "Sem telefone");
-  setText(professorFields.cpf, professor.cpf);
-  setText(professorFields.especialidade, professor.especialidade);
-  setText(professorFields.cref, professor.cref || "Nao informado");
-  setText(professorFields.horarios, professor.horarios || "Nao informado");
-  setText(professorFields.status, professor.status);
-  setText(
-    professorFields.created,
-    professor.created_at ? new Date(professor.created_at).toLocaleString("pt-BR") : "-",
-  );
+  setText(adminFields.nome, currentProfile.nome_completo || currentProfile.nome);
+  setText(adminFields.email, currentProfile.email || data.session.user.email);
+  setText(adminFields.tipo, "Administrador");
+  setText(adminFields.trocarSenha, currentProfile.precisa_trocar_senha ? "Sim" : "Nao");
+  setText(adminFields.status, currentProfile.status === "INATIVO" ? "Inativo" : "Ativo");
+  setText(adminFields.created, formatDate(currentProfile.created_at));
+  setText(adminFields.updated, formatDate(currentProfile.updated_at));
 
   personalDataSection?.classList.remove("hidden");
 }
 
 themeLight?.addEventListener("click", () => {
-  localStorage.setItem("professor-theme", "light");
+  localStorage.setItem("admin-theme", "light");
   applyTheme("light");
 });
 
 themeDark?.addEventListener("click", () => {
-  localStorage.setItem("professor-theme", "black");
+  localStorage.setItem("admin-theme", "black");
   applyTheme("black");
 });
 
@@ -170,15 +157,38 @@ passwordForm?.addEventListener("submit", async (event) => {
     password: newPassword,
   });
 
+  if (error) {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Salvar nova senha";
+      button.classList.remove("cursor-not-allowed", "opacity-70");
+    }
+    showMessage("Nao foi possivel alterar a senha. Confira os dados e tente novamente.", "error");
+    return;
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      precisa_trocar_senha: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", data.session.user.id);
+
   if (button) {
     button.disabled = false;
     button.textContent = "Salvar nova senha";
     button.classList.remove("cursor-not-allowed", "opacity-70");
   }
 
-  if (error) {
-    showMessage("Nao foi possivel alterar a senha. Confira os dados e tente novamente.", "error");
+  if (profileError) {
+    showMessage("Senha alterada, mas nao foi possivel atualizar o perfil. Tente novamente.", "error");
     return;
+  }
+
+  if (currentProfile) {
+    currentProfile.precisa_trocar_senha = false;
+    currentProfile.updated_at = new Date().toISOString();
   }
 
   passwordForm.reset();

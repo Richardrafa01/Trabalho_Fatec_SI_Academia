@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { getPlanos, planoOptionLabel, planosToMap } from "./planos.js";
 
 const page = document.body.dataset.page;
 const area = document.body.dataset.area ?? "admin";
@@ -6,6 +7,7 @@ const message = document.querySelector("#message");
 const alunoSelect = document.querySelector("#aluno-id");
 const alunoSearch = document.querySelector("#aluno-search");
 const alunoResults = document.querySelector("#aluno-results");
+let alunoQuickListButton = null;
 const alunoSelected = document.querySelector("#aluno-selected");
 const deleteAlunoButton = document.querySelector("#delete-aluno-button");
 const bloquearAlunoButton = document.querySelector("#bloquear-aluno-button");
@@ -17,20 +19,8 @@ const historyBox = document.querySelector("#history-box");
 const presencaBox = document.querySelector("#presenca-box");
 const validadePreview = document.querySelector("#validade-preview");
 
-const planos = {
-  Mensal: {
-    meses: 1,
-    valor: 80,
-  },
-  Trimestral: {
-    meses: 3,
-    valor: 216,
-  },
-  Semestral: {
-    meses: 6,
-    valor: 408,
-  },
-};
+let planos = {};
+const backofficeRoles = ["ADMIN", "GERENTE", "ADMINISTRATIVO", "RECEPCAO"];
 
 function showMessage(text, type = "success") {
   if (!message) return;
@@ -78,7 +68,7 @@ async function protectPage() {
     return false;
   }
 
-  if (!["ADMIN", "PROFESSOR"].includes(profile?.tipo_usuario)) {
+  if (![...backofficeRoles, "PROFESSOR"].includes(profile?.tipo_usuario)) {
     await supabase.auth.signOut();
     window.location.href = "/";
     return false;
@@ -104,7 +94,7 @@ async function getAlunos() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    showMessage(`Erro ao buscar alunos: ${error.message}`, "error");
+    showMessage("Nao foi possivel carregar os alunos. Tente novamente.", "error");
     return [];
   }
 
@@ -156,6 +146,31 @@ function formatCurrencyBR(value) {
   });
 }
 
+async function loadPlanosAcademia() {
+  const planosList = await getPlanos(supabase, { ativosOnly: true });
+  planos = planosToMap(planosList);
+  fillPlanoOptions(planosList);
+}
+
+function fillPlanoOptions(planosList) {
+  const planoField = alunoForm?.elements.plano;
+  if (!planoField || planoField.tagName !== "SELECT") return;
+
+  const currentValue = planoField.value;
+  planoField.innerHTML = '<option value="">Selecione um plano</option>';
+
+  planosList.forEach((plano) => {
+    const option = document.createElement("option");
+    option.value = plano.nome;
+    option.textContent = planoOptionLabel(plano);
+    planoField.append(option);
+  });
+
+  if (planosList.some((plano) => plano.nome === currentValue)) {
+    planoField.value = currentValue;
+  }
+}
+
 async function registrarPagamentoMatricula({
   alunoId,
   plano,
@@ -195,7 +210,7 @@ async function getAcessosAluno(alunoId) {
     .limit(10);
 
   if (error) {
-    showMessage(`Erro ao buscar acessos: ${error.message}`, "error");
+    showMessage("Nao foi possivel carregar os acessos do aluno. Tente novamente.", "error");
     return [];
   }
 
@@ -206,8 +221,8 @@ function renderAcessos(aluno, acessos) {
   if (!presencaBox) return;
 
   const situacao = alunoTemAcesso(aluno)
-    ? "Pre-validacao local: acesso possivelmente liberado."
-    : "Pre-validacao local: acesso bloqueado por status inativo ou vencimento.";
+    ? "Situacao atual: acesso possivelmente liberado."
+    : "Situacao atual: acesso bloqueado por status inativo ou vencimento.";
 
   const linhas = acessos.length
     ? acessos.map((acesso) => {
@@ -238,7 +253,7 @@ async function registrarAcessoCatraca(alunoId, origem = "ADMIN") {
   });
 
   if (error) {
-    showMessage(`Erro ao consultar catraca: ${error.message}`, "error");
+    showMessage("Nao foi possivel validar o acesso. Tente novamente.", "error");
     return null;
   }
 
@@ -364,21 +379,64 @@ function alunoResumo(aluno) {
     .join(" | ");
 }
 
+function sortAlunosPorNome(alunos) {
+  return [...alunos].sort((first, second) =>
+    (first.nome_completo ?? "").localeCompare(second.nome_completo ?? "", "pt-BR", {
+      sensitivity: "base",
+    }),
+  );
+}
+
+function primeirosAlunosPorNome(alunos, limit = 10) {
+  return sortAlunosPorNome(alunos).slice(0, limit);
+}
+
 function buscarAlunosPorInicio(alunos, term) {
   const normalizedTerm = normalizeText(term);
   if (!normalizedTerm) return [];
 
-  return alunos.filter((aluno) =>
+  return sortAlunosPorNome(alunos).filter((aluno) =>
     normalizeText(aluno.nome_completo).startsWith(normalizedTerm),
   );
 }
 
-function renderAlunoResults(alunos, onSelect) {
+function setupAlunoQuickListButton() {
+  if (area !== "admin") return null;
+  if (!alunoSearch || alunoQuickListButton) return alunoQuickListButton;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex gap-2";
+
+  alunoSearch.parentNode.insertBefore(wrapper, alunoSearch);
+  wrapper.append(alunoSearch);
+
+  alunoSearch.classList.add("min-w-0", "flex-1");
+
+  alunoQuickListButton = document.createElement("button");
+  alunoQuickListButton.id = "aluno-quick-list-button";
+  alunoQuickListButton.className = "h-12 w-12 shrink-0 rounded-md border border-slate-300 bg-white text-lg font-bold text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700";
+  alunoQuickListButton.type = "button";
+  alunoQuickListButton.title = "Mostrar 10 primeiros alunos";
+  alunoQuickListButton.setAttribute("aria-label", "Mostrar 10 primeiros alunos");
+  alunoQuickListButton.textContent = "...";
+  wrapper.append(alunoQuickListButton);
+
+  return alunoQuickListButton;
+}
+
+function selectAluno(aluno, onSelect) {
+  if (alunoSelect) alunoSelect.value = aluno.id;
+  if (alunoSearch) alunoSearch.value = alunoLabel(aluno);
+  if (alunoResults) alunoResults.classList.add("hidden");
+  onSelect(aluno);
+}
+
+function renderAlunoResults(alunos, onSelect, options = {}) {
   if (!alunoResults) return;
 
   alunoResults.innerHTML = "";
 
-  if (!alunoSearch.value.trim()) {
+  if (!options.forceVisible && !alunoSearch.value.trim()) {
     alunoResults.classList.add("hidden");
     return;
   }
@@ -386,7 +444,7 @@ function renderAlunoResults(alunos, onSelect) {
   if (alunos.length === 0) {
     const empty = document.createElement("p");
     empty.className = "px-4 py-3 text-sm text-slate-500";
-    empty.textContent = "Nenhum aluno encontrado com essas letras iniciais.";
+    empty.textContent = "Nenhum aluno encontrado.";
     alunoResults.append(empty);
     alunoResults.classList.remove("hidden");
     return;
@@ -406,12 +464,7 @@ function renderAlunoResults(alunos, onSelect) {
     meta.textContent = alunoResumo(aluno);
 
     button.append(name, meta);
-    button.addEventListener("click", () => {
-      if (alunoSelect) alunoSelect.value = aluno.id;
-      if (alunoSearch) alunoSearch.value = alunoLabel(aluno);
-      alunoResults.classList.add("hidden");
-      onSelect(aluno);
-    });
+    button.addEventListener("click", () => selectAluno(aluno, onSelect));
 
     alunoResults.append(button);
   });
@@ -421,6 +474,12 @@ function renderAlunoResults(alunos, onSelect) {
 
 function setupAlunoSearch(alunos, onSelect) {
   if (!alunoSearch) return;
+
+  setupAlunoQuickListButton()?.addEventListener("click", () => {
+    if (alunoSelect) alunoSelect.value = "";
+    alunoSearch.value = "";
+    renderAlunoResults(primeirosAlunosPorNome(alunos), onSelect, { forceVisible: true });
+  });
 
   alunoSearch.addEventListener("input", () => {
     if (alunoSelect) alunoSelect.value = "";
@@ -490,7 +549,7 @@ async function setupCreate() {
     }
 
     if (!pagamentoConfirmado) {
-      showMessage("Confirme o pagamento inicial para cadastrar o aluno.", "error");
+      showMessage("Confirme o pagamento inicial.", "error");
       return;
     }
 
@@ -501,7 +560,7 @@ async function setupCreate() {
       .single();
 
     if (error) {
-      showMessage(`Erro ao cadastrar aluno: ${error.message}`, "error");
+      showMessage("Nao foi possivel cadastrar o aluno. Confira os dados e tente novamente.", "error");
       return;
     }
 
@@ -514,7 +573,7 @@ async function setupCreate() {
     });
 
     if (paymentError) {
-      showMessage(`Aluno cadastrado, mas houve erro ao registrar pagamento: ${paymentError.message}`, "error");
+      showMessage("Aluno cadastrado, mas nao foi possivel registrar o pagamento. Tente novamente.", "error");
       return;
     }
 
@@ -546,7 +605,7 @@ async function setupEdit() {
       .eq("id", alunoSelect.value);
 
     if (error) {
-      showMessage(`Erro ao editar aluno: ${error.message}`, "error");
+      showMessage("Nao foi possivel atualizar o aluno. Tente novamente.", "error");
       return;
     }
 
@@ -582,7 +641,7 @@ async function setupDelete() {
     const { error } = await supabase.from("alunos").delete().eq("id", alunoSelect.value);
 
     if (error) {
-      showMessage(`Erro ao excluir aluno: ${error.message}`, "error");
+      showMessage("Nao foi possivel remover o cadastro do aluno. Tente novamente.", "error");
       return;
     }
 
@@ -675,7 +734,7 @@ async function setupRenew() {
     }
 
     if (!pagamentoConfirmado) {
-      showMessage("Confirme o recebimento do pagamento para reativar o aluno.", "error");
+      showMessage("Confirme o pagamento.", "error");
       return;
     }
 
@@ -689,7 +748,7 @@ async function setupRenew() {
     });
 
     if (paymentError) {
-      showMessage(`Erro ao registrar pagamento: ${paymentError.message}`, "error");
+      showMessage("Nao foi possivel registrar o pagamento. Tente novamente.", "error");
       return;
     }
 
@@ -703,7 +762,7 @@ async function setupRenew() {
       .eq("id", alunoSelect.value);
 
     if (error) {
-      showMessage(`Erro ao renovar matricula: ${error.message}`, "error");
+      showMessage("Nao foi possivel renovar a matricula. Tente novamente.", "error");
       return;
     }
 
@@ -747,9 +806,9 @@ async function setupPresenca() {
     if (!resultado) return;
 
     if (resultado.liberado) {
-      showMessage("Liberado: catraca pode destravar.");
+      showMessage("Entrada liberada.");
     } else {
-      showMessage(`Bloqueado: ${resultado.motivo}`, "error");
+      showMessage(`Entrada bloqueada: ${resultado.motivo}`, "error");
     }
 
     const alunoAtualizado = {
@@ -775,7 +834,7 @@ async function getBloqueioAtivo(alunoId) {
     .limit(1);
 
   if (error) {
-    showMessage(`Erro ao buscar bloqueio: ${error.message}`, "error");
+    showMessage("Nao foi possivel consultar os bloqueios do aluno. Tente novamente.", "error");
     return null;
   }
 
@@ -826,11 +885,11 @@ async function setupBlock() {
     });
 
     if (error) {
-      showMessage(`Erro ao bloquear aluno: ${error.message}`, "error");
+      showMessage("Nao foi possivel bloquear o aluno. Tente novamente.", "error");
       return;
     }
 
-    showMessage("Aluno bloqueado manualmente.");
+    showMessage("Aluno bloqueado.");
     alunoForm.elements.motivo_bloqueio.value = "";
     await renderBloqueioAluno(alunoAtual);
   });
@@ -848,11 +907,11 @@ async function setupBlock() {
       .eq("ativo", true);
 
     if (error) {
-      showMessage(`Erro ao liberar aluno: ${error.message}`, "error");
+      showMessage("Nao foi possivel liberar o aluno. Tente novamente.", "error");
       return;
     }
 
-    showMessage("Bloqueio manual removido.");
+    showMessage("Acesso liberado.");
     await renderBloqueioAluno(alunoAtual);
   });
 }
@@ -866,8 +925,8 @@ function renderAlunoCards(alunos) {
     const empty = document.createElement("p");
     empty.className = "rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500 sm:col-span-2";
     empty.textContent = alunoSearch?.value.trim()
-      ? "Nenhum aluno encontrado com essas letras iniciais."
-      : "Digite as letras iniciais para buscar alunos cadastrados.";
+      ? "Nenhum aluno encontrado."
+      : "Use a busca para localizar alunos.";
     alunosCards.append(empty);
     return;
   }
@@ -914,6 +973,11 @@ async function setupView() {
     emptyState.classList.toggle("hidden", alunos.length > 0);
   }
 
+  setupAlunoQuickListButton()?.addEventListener("click", () => {
+    alunoSearch.value = "";
+    renderAlunoCards(primeirosAlunosPorNome(alunos));
+  });
+
   renderAlunoCards([]);
 
   alunoSearch?.addEventListener("input", () => {
@@ -925,6 +989,7 @@ const canAccessPage = await protectPage();
 
 if (canAccessPage) {
   await desativarMatriculasVencidas();
+  await loadPlanosAcademia();
 
   if (page === "cadastrar-aluno") setupCreate();
   if (page === "ver-alunos") setupView();

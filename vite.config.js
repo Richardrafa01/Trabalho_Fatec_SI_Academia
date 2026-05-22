@@ -13,6 +13,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         menu: resolve(__dirname, 'admin/menu.html'),
+        adminConfiguracoes: resolve(__dirname, 'admin/configuracoes.html'),
         menuProfessor: resolve(__dirname, 'professor/menu.html'),
         professorVerAlunos: resolve(__dirname, 'professor/ver-alunos.html'),
         professorHistoricoAluno: resolve(__dirname, 'professor/historico-aluno.html'),

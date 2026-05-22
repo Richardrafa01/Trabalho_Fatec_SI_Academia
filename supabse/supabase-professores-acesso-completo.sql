@@ -5,12 +5,19 @@ create table if not exists profiles (
   nome varchar(150),
   nome_completo varchar(150) not null,
   email varchar(150) unique not null,
-  tipo_usuario varchar(20) not null check (tipo_usuario in ('ADMIN', 'PROFESSOR', 'ALUNO')),
+  tipo_usuario varchar(30) not null check (tipo_usuario in ('ADMIN', 'GERENTE', 'ADMINISTRATIVO', 'RECEPCAO', 'PROFESSOR', 'ALUNO')),
   precisa_trocar_senha boolean not null default true,
   status varchar(20) not null default 'ATIVO',
   created_at timestamp default now(),
   updated_at timestamp default now()
 );
+
+alter table profiles
+drop constraint if exists profiles_tipo_usuario_check;
+
+alter table profiles
+add constraint profiles_tipo_usuario_check
+check (tipo_usuario in ('ADMIN', 'GERENTE', 'ADMINISTRATIVO', 'RECEPCAO', 'PROFESSOR', 'ALUNO'));
 
 create table if not exists professores (
   id uuid primary key default gen_random_uuid(),
@@ -20,6 +27,8 @@ create table if not exists professores (
   telefone varchar(20),
   cpf varchar(14) unique not null,
   data_nascimento date,
+  cargo varchar(80) not null default 'Professor de musculacao',
+  perfil_acesso varchar(30) not null default 'PROFESSOR',
   especialidade varchar(100) not null,
   cref varchar(30),
   valor_hora numeric(8,2),
@@ -35,7 +44,7 @@ alter table profiles
 add column if not exists nome varchar(150),
 add column if not exists nome_completo varchar(150),
 add column if not exists email varchar(150),
-add column if not exists tipo_usuario varchar(20),
+add column if not exists tipo_usuario varchar(30),
 add column if not exists precisa_trocar_senha boolean not null default true,
 add column if not exists status varchar(20) not null default 'ATIVO',
 add column if not exists created_at timestamp default now(),
@@ -45,7 +54,9 @@ alter table professores
 add column if not exists profile_id uuid references profiles(id),
 add column if not exists acesso_criado boolean not null default false,
 add column if not exists acesso_criado_em timestamp,
-add column if not exists status varchar(20) not null default 'ATIVO';
+add column if not exists status varchar(20) not null default 'ATIVO',
+add column if not exists cargo varchar(80) not null default 'Professor de musculacao',
+add column if not exists perfil_acesso varchar(30) not null default 'PROFESSOR';
 
 alter table profiles enable row level security;
 alter table professores enable row level security;

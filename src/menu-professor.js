@@ -22,11 +22,11 @@ const params = new URLSearchParams(window.location.search);
 if (!data.session) {
   window.location.href = "/";
 } else if (email) {
-  email.textContent = `Professor logado: ${data.session.user.email}`;
+  email.textContent = `Acesso: ${data.session.user.email}`;
 }
 
 if (params.get("senha") === "alterada" && passwordSuccess) {
-  passwordSuccess.textContent = "Senha alterada com sucesso. Seu menu de professor esta liberado.";
+  passwordSuccess.textContent = "Senha alterada. Acesso liberado.";
   passwordSuccess.classList.remove("hidden");
   window.history.replaceState({}, "", "/professor/menu.html");
 }
@@ -149,7 +149,7 @@ async function loadProfessorDashboard() {
   if (alunosError) {
     profAlunosLista.innerHTML = `
       <div class="rounded-md border border-red-200 bg-red-50 p-5 text-sm text-red-700 lg:col-span-2">
-        Erro ao carregar alunos: ${alunosError.message}
+        Nao foi possivel carregar os alunos no momento.
       </div>
     `;
     return;
@@ -223,7 +223,7 @@ passwordForm?.addEventListener("submit", async (event) => {
   });
 
   if (error) {
-    showPasswordMessage(`Erro ao alterar senha: ${error.message}`, "error");
+    showPasswordMessage("Nao foi possivel alterar a senha. Confira os dados e tente novamente.", "error");
     if (button) {
       button.disabled = false;
       button.textContent = "Salvar nova senha";
@@ -241,7 +241,7 @@ passwordForm?.addEventListener("submit", async (event) => {
     .eq("id", data.session.user.id);
 
   if (profileError) {
-    showPasswordMessage(`Senha alterada, mas nao foi possivel liberar o menu: ${profileError.message}`, "error");
+    showPasswordMessage("Senha alterada, mas nao foi possivel atualizar seu perfil. Tente novamente.", "error");
     if (button) {
       button.disabled = false;
       button.textContent = "Salvar nova senha";
