@@ -8,10 +8,10 @@
   </head>
   <body class="min-h-screen bg-slate-100 font-sans text-slate-900" data-page="cadastrar-aluno">
     <main class="mx-auto max-w-4xl px-4 py-8">
-      <a class="text-sm font-bold text-orange-700 hover:underline" href="/admin/menu.html#alunos">Voltar ao painel</a>
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/alunos.html">Voltar para alunos</a>
       <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
         <h1 class="text-2xl font-bold text-slate-950">Cadastrar aluno</h1>
-        <p class="mt-1 text-sm text-slate-600">Preencha os dados da matricula.</p>
+        <p class="mt-1 text-sm text-slate-600">Preencha os dados da matrícula.</p>
         <p id="message" class="mt-5 hidden"></p>
 
         <form id="aluno-form" class="mt-6 grid gap-4 sm:grid-cols-2">
@@ -49,7 +49,7 @@
             </select>
           </div>
           <div class="rounded-md bg-slate-100 p-4">
-            <p class="text-sm font-bold text-slate-700">Validade da matricula</p>
+            <p class="text-sm font-bold text-slate-700">Validade da matrícula</p>
             <p id="validade-preview" class="mt-2 text-sm font-semibold text-slate-600">Selecione um plano para calcular automaticamente.</p>
           </div>
           <div>
@@ -58,8 +58,8 @@
               <option value="">Selecione a forma</option>
               <option value="DINHEIRO">Dinheiro</option>
               <option value="PIX">PIX</option>
-              <option value="CARTAO_CREDITO">Cartao de credito</option>
-              <option value="CARTAO_DEBITO">Cartao de debito</option>
+              <option value="CARTAO_CREDITO">Cartão de crédito</option>
+              <option value="CARTAO_DEBITO">Cartão de débito</option>
             </select>
           </div>
           <label class="flex items-start gap-3 rounded-md border border-slate-200 p-4 text-sm font-semibold text-slate-700">
@@ -71,11 +71,11 @@
             <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cep" name="cep" inputmode="numeric" maxlength="9" placeholder="Ex: 01001-000" />
           </div>
           <div>
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="endereco">Endereco</label>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="endereco">Endereço</label>
             <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="endereco" name="endereco" />
           </div>
           <div>
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="numero">Numero</label>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="numero">Número</label>
             <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="numero" name="numero" />
           </div>
           <div>
@@ -95,7 +95,7 @@
             <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="complemento" name="complemento" />
           </div>
           <div class="sm:col-span-2">
-            <label class="mb-2 block text-sm font-bold text-slate-700" for="observacoes">Observacoes</label>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="observacoes">Observações</label>
             <textarea class="min-h-28 w-full rounded-md border border-slate-300 p-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="observacoes" name="observacoes"></textarea>
           </div>
           <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700 sm:col-span-2" type="submit">

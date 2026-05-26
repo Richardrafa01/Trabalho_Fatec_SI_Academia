@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { navigate } from "./routes.js";
 
 const logoutButton = document.querySelector("#logout-button");
 const message = document.querySelector("#message");
@@ -28,7 +29,7 @@ const { data } = await supabase.auth.getSession();
 let currentProfile = null;
 
 if (!data.session) {
-  window.location.href = "/";
+  navigate("/");
 }
 
 function showMessage(text, type = "success") {
@@ -77,13 +78,13 @@ async function protectAndLoadProfile() {
   }
 
   if (profile?.tipo_usuario === "PROFESSOR") {
-    window.location.href = "/professor/menu.html";
+    navigate("/professor/menu.html");
     return;
   }
 
   if (profile?.tipo_usuario !== "ADMIN" || profile.status === "INATIVO") {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
     return;
   }
 
@@ -197,5 +198,5 @@ passwordForm?.addEventListener("submit", async (event) => {
 
 logoutButton?.addEventListener("click", async () => {
   await supabase.auth.signOut();
-  window.location.href = "/";
+  navigate("/");
 });

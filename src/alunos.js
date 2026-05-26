@@ -1,5 +1,6 @@
 import { supabase } from "./supabase.js";
 import { getPlanos, planoOptionLabel, planosToMap } from "./planos.js";
+import { appPath, navigate } from "./routes.js";
 
 const page = document.body.dataset.page;
 const area = document.body.dataset.area ?? "admin";
@@ -34,7 +35,7 @@ function showMessage(text, type = "success") {
 async function protectPage() {
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
-    window.location.href = "/";
+    navigate("/");
     return false;
   }
 
@@ -46,7 +47,7 @@ async function protectPage() {
 
   if (profile?.status === "INATIVO") {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
     return false;
   }
 
@@ -59,18 +60,18 @@ async function protectPage() {
       "presenca-aluno": `/professor/presenca-aluno.html${window.location.search}`,
     };
 
-    window.location.href = redirectByPage[page] ?? "/professor/menu.html";
+    navigate(redirectByPage[page] ?? "/professor/menu.html");
     return false;
   }
 
   if (profile?.tipo_usuario === "PROFESSOR" && !paginasPermitidasProfessor.includes(page)) {
-    window.location.href = "/professor/menu.html";
+    navigate("/professor/menu.html");
     return false;
   }
 
   if (![...backofficeRoles, "PROFESSOR"].includes(profile?.tipo_usuario)) {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
     return false;
   }
 
@@ -933,10 +934,10 @@ function renderAlunoCards(alunos) {
 
   const historicoHref = (alunoId) =>
     area === "professor"
-      ? `/professor/historico-aluno.html?id=${alunoId}`
-      : `/admin/historico-aluno.html?id=${alunoId}`;
+      ? appPath(`/professor/historico-aluno.html?id=${alunoId}`)
+      : appPath(`/admin/historico-aluno.html?id=${alunoId}`);
 
-  const editarHref = (alunoId) => `/admin/editar-aluno.html?id=${alunoId}`;
+  const editarHref = (alunoId) => appPath(`/admin/editar-aluno.html?id=${alunoId}`);
 
   alunos.forEach((aluno) => {
     const card = document.createElement("article");

@@ -1,3 +1,5 @@
+import { appPath, currentPath } from "./routes.js";
+
 const theme = localStorage.getItem("admin-theme") ?? "light";
 
 document.body.classList.toggle("professor-theme-black", theme === "black");
@@ -5,41 +7,49 @@ document.body.classList.toggle("professor-theme-light", theme !== "black");
 
 const adminPages = {
   "/admin/cadastrar-aluno.html": "Cadastrar aluno",
+  "/admin/alunos.html": "Alunos",
   "/admin/editar-aluno.html": "Editar aluno",
   "/admin/excluir-aluno.html": "Excluir aluno",
-  "/admin/historico-aluno.html": "Historico do aluno",
-  "/admin/presenca-aluno.html": "Presenca do aluno",
-  "/admin/renovar-matricula.html": "Renovar matricula",
+  "/admin/historico-aluno.html": "Histórico do aluno",
+  "/admin/presenca-aluno.html": "Presença do aluno",
+  "/admin/renovar-matricula.html": "Renovar matrícula",
   "/admin/bloquear-aluno.html": "Bloquear aluno",
+  "/admin/controle-acesso.html": "Controle de acesso",
+  "/admin/planos.html": "Planos",
   "/admin/ver-alunos.html": "Consulta de alunos",
-  "/admin/cadastrar-professor.html": "Cadastrar funcionario",
-  "/admin/editar-professor.html": "Editar funcionario",
-  "/admin/excluir-professor.html": "Excluir funcionario",
-  "/admin/ver-professores.html": "Funcionarios",
-  "/admin/configuracoes.html": "Configuracoes",
+  "/admin/cadastrar-professor.html": "Cadastrar funcionário",
+  "/admin/funcionarios.html": "Funcionários",
+  "/admin/editar-professor.html": "Editar funcionário",
+  "/admin/excluir-professor.html": "Excluir funcionário",
+  "/admin/ver-professores.html": "Funcionários",
+  "/admin/configuracoes.html": "Configurações",
 };
 
 function getActiveAdminHref() {
-  const path = window.location.pathname;
+  const path = currentPath();
 
   if (path === "/admin/configuracoes.html") return "/admin/configuracoes.html";
-  if (path.includes("professor")) return "/admin/menu.html#professores";
-  if (path.includes("bloquear") || path.includes("presenca")) return "/admin/menu.html#acesso";
+  if (path === "/admin/controle-acesso.html") return "/admin/controle-acesso.html";
+  if (path === "/admin/planos.html") return "/admin/planos.html";
+  if (path === "/admin/alunos.html") return "/admin/alunos.html";
+  if (path === "/admin/funcionarios.html") return "/admin/funcionarios.html";
+  if (path.includes("professor")) return "/admin/funcionarios.html";
+  if (path.includes("bloquear") || path.includes("presenca")) return "/admin/controle-acesso.html";
   if (path.includes("renovar")) return "/admin/menu.html#financeiro";
-  if (path.includes("aluno")) return "/admin/menu.html#alunos";
+  if (path.includes("aluno")) return "/admin/alunos.html";
 
   return "/admin/menu.html";
 }
 
 function isActiveLink(href) {
-  const url = new URL(href, window.location.origin);
-  const activeUrl = new URL(getActiveAdminHref(), window.location.origin);
+  const url = new URL(appPath(href), window.location.origin);
+  const activeUrl = new URL(appPath(getActiveAdminHref()), window.location.origin);
   return url.pathname === activeUrl.pathname && url.hash === activeUrl.hash;
 }
 
 function createNavLink(label, href) {
   const link = document.createElement("a");
-  link.href = href;
+  link.href = appPath(href);
   link.textContent = label;
 
   if (isActiveLink(href)) {
@@ -50,7 +60,7 @@ function createNavLink(label, href) {
 }
 
 function setupAdminContextNav() {
-  if (window.location.pathname === "/admin/menu.html") return;
+  if (currentPath() === "/admin/menu.html") return;
   if (document.querySelector(".app-context-nav")) return;
 
   const nav = document.createElement("header");
@@ -67,20 +77,21 @@ function setupAdminContextNav() {
 
   const subtitle = document.createElement("p");
   subtitle.className = "app-context-nav-subtitle";
-  subtitle.textContent = adminPages[window.location.pathname] ?? "Area administrativa";
+  subtitle.textContent = adminPages[currentPath()] ?? "Área administrativa";
 
   titleBox.append(title, subtitle);
 
   const links = document.createElement("nav");
   links.className = "app-context-nav-links";
-  links.setAttribute("aria-label", "Navegacao rapida do admin");
+  links.setAttribute("aria-label", "Navegação rápida do admin");
 
   [
     ["Menu", "/admin/menu.html"],
-    ["Alunos", "/admin/menu.html#alunos"],
-    ["Funcionarios", "/admin/menu.html#professores"],
+    ["Alunos", "/admin/alunos.html"],
+    ["Funcionários", "/admin/funcionarios.html"],
     ["Financeiro", "/admin/menu.html#financeiro"],
-    ["Acesso", "/admin/menu.html#acesso"],
+    ["Acesso", "/admin/controle-acesso.html"],
+    ["Planos", "/admin/planos.html"],
     ["Config", "/admin/configuracoes.html"],
   ].forEach(([label, href]) => {
     links.append(createNavLink(label, href));

@@ -39,17 +39,10 @@ function normalizePlano(plano, index = 0) {
 }
 
 export function normalizePlanos(planos) {
-  const sortedPlanos = (planos?.length ? planos : defaultPlanos)
+  return (planos?.length ? planos : defaultPlanos)
     .map(normalizePlano)
     .filter((plano) => plano.nome)
     .sort((first, second) => first.ordem - second.ordem);
-
-  const planoMensal = getPlanoMensal(sortedPlanos);
-
-  return sortedPlanos.map((plano) => ({
-    ...plano,
-    valor: calcularValorPlano(plano, planoMensal),
-  }));
 }
 
 export function parseDiscountPercent(value) {
@@ -143,6 +136,18 @@ export async function salvarPlano(supabase, plano) {
       },
       { onConflict: "nome" },
     );
+
+  return { error };
+}
+
+export async function excluirPlano(supabase, nome) {
+  const storedPlanos = getStoredPlanos();
+  setStoredPlanos(storedPlanos.filter((plano) => plano.nome !== nome));
+
+  const { error } = await supabase
+    .from("planos_academia")
+    .delete()
+    .eq("nome", nome);
 
   return { error };
 }

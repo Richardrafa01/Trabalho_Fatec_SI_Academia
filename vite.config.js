@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
 
 export default defineConfig({
+  base: '/Sistema-de-academia/',
   plugins: [
     react(),
     tailwindcss(),
@@ -13,6 +14,10 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         menu: resolve(__dirname, 'admin/menu.html'),
+        adminAlunos: resolve(__dirname, 'admin/alunos.html'),
+        adminControleAcesso: resolve(__dirname, 'admin/controle-acesso.html'),
+        adminFuncionarios: resolve(__dirname, 'admin/funcionarios.html'),
+        adminPlanos: resolve(__dirname, 'admin/planos.html'),
         adminConfiguracoes: resolve(__dirname, 'admin/configuracoes.html'),
         menuProfessor: resolve(__dirname, 'professor/menu.html'),
         professorVerAlunos: resolve(__dirname, 'professor/ver-alunos.html'),

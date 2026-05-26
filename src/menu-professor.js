@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { appPath, navigate, replaceHistory } from "./routes.js";
 
 const email = document.querySelector("#user-email");
 const logoutButton = document.querySelector("#logout-button");
@@ -20,7 +21,7 @@ const { data } = await supabase.auth.getSession();
 const params = new URLSearchParams(window.location.search);
 
 if (!data.session) {
-  window.location.href = "/";
+  navigate("/");
 } else if (email) {
   email.textContent = `Acesso: ${data.session.user.email}`;
 }
@@ -28,7 +29,7 @@ if (!data.session) {
 if (params.get("senha") === "alterada" && passwordSuccess) {
   passwordSuccess.textContent = "Senha alterada. Acesso liberado.";
   passwordSuccess.classList.remove("hidden");
-  window.history.replaceState({}, "", "/professor/menu.html");
+  replaceHistory("/professor/menu.html");
 }
 
 function todayAsDate() {
@@ -85,13 +86,13 @@ async function loadProfessorProfile() {
     .maybeSingle();
 
   if (profile?.tipo_usuario !== "PROFESSOR") {
-    window.location.href = "/admin/menu.html";
+    navigate("/admin/menu.html");
     return;
   }
 
   if (profile.status === "INATIVO") {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
     return;
   }
 
@@ -180,7 +181,7 @@ async function loadProfessorDashboard() {
         <span class="rounded-md px-2 py-1 text-xs font-bold ${statusClass}"></span>
       </div>
       <p class="mt-3 text-sm text-slate-600"></p>
-      <a class="mt-4 inline-flex rounded-md border border-slate-200 px-3 py-2 text-xs font-bold text-orange-700 hover:border-orange-300 hover:bg-orange-50" href="/professor/historico-aluno.html?id=${aluno.id}">
+      <a class="mt-4 inline-flex rounded-md border border-slate-200 px-3 py-2 text-xs font-bold text-orange-700 hover:border-orange-300 hover:bg-orange-50" href="${appPath(`/professor/historico-aluno.html?id=${aluno.id}`)}">
         Ver historico
       </a>
     `;
@@ -251,10 +252,10 @@ passwordForm?.addEventListener("submit", async (event) => {
   }
 
   passwordForm.reset();
-  window.location.href = "/professor/menu.html?senha=alterada";
+  navigate("/professor/menu.html?senha=alterada");
 });
 
 logoutButton?.addEventListener("click", async () => {
   await supabase.auth.signOut();
-  window.location.href = "/";
+  navigate("/");
 });

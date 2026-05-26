@@ -217,6 +217,17 @@ values
   ('Semestral', 6, 408.00, '15%', 'ATIVO', 3)
 on conflict (nome) do nothing;
 
+alter table alunos
+drop constraint if exists alunos_plano_fkey;
+
+alter table alunos
+add constraint alunos_plano_fkey
+foreign key (plano)
+references planos_academia(nome)
+on update cascade
+on delete restrict
+not valid;
+
 -- ============================================================
 -- Pagamentos / renovacoes de matricula
 -- ============================================================
@@ -224,7 +235,7 @@ on conflict (nome) do nothing;
 create table if not exists pagamentos_matriculas (
   id uuid primary key default gen_random_uuid(),
   aluno_id uuid not null references alunos(id) on delete cascade,
-  plano varchar(50) not null,
+  plano varchar(50) not null references planos_academia(nome) on update cascade on delete restrict,
   valor numeric(8,2) not null,
   forma_pagamento varchar(30) not null,
   status varchar(20) not null default 'PAGO',
@@ -254,7 +265,19 @@ alter table pagamentos_matriculas
 add constraint pagamentos_matriculas_status_check
 check (status in ('PAGO', 'PENDENTE', 'CANCELADO'));
 
+alter table pagamentos_matriculas
+drop constraint if exists pagamentos_matriculas_plano_fkey;
+
+alter table pagamentos_matriculas
+add constraint pagamentos_matriculas_plano_fkey
+foreign key (plano)
+references planos_academia(nome)
+on update cascade
+on delete restrict
+not valid;
+
 create index if not exists pagamentos_matriculas_aluno_id_idx on pagamentos_matriculas(aluno_id);
+create index if not exists pagamentos_matriculas_plano_idx on pagamentos_matriculas(plano);
 create index if not exists pagamentos_matriculas_pago_em_idx on pagamentos_matriculas(pago_em);
 
 -- ============================================================
@@ -263,7 +286,7 @@ create index if not exists pagamentos_matriculas_pago_em_idx on pagamentos_matri
 
 create table if not exists plano_regras_acesso (
   id uuid primary key default gen_random_uuid(),
-  plano varchar(50) not null,
+  plano varchar(50) not null references planos_academia(nome) on update cascade on delete cascade,
   dia_semana smallint not null check (dia_semana between 0 and 6),
   hora_inicio time not null default '00:00',
   hora_fim time not null default '23:59:59',
@@ -299,6 +322,17 @@ add column if not exists hora_inicio time not null default '00:00',
 add column if not exists hora_fim time not null default '23:59:59',
 add column if not exists ativo boolean not null default true,
 add column if not exists created_at timestamp default now();
+
+alter table plano_regras_acesso
+drop constraint if exists plano_regras_acesso_plano_fkey;
+
+alter table plano_regras_acesso
+add constraint plano_regras_acesso_plano_fkey
+foreign key (plano)
+references planos_academia(nome)
+on update cascade
+on delete cascade
+not valid;
 
 alter table bloqueios_alunos
 add column if not exists aluno_id uuid references alunos(id) on delete cascade,

@@ -1,12 +1,25 @@
 create table if not exists plano_regras_acesso (
   id uuid primary key default gen_random_uuid(),
-  plano varchar(50) not null,
+  plano varchar(50) not null references planos_academia(nome) on update cascade on delete cascade,
   dia_semana smallint not null check (dia_semana between 0 and 6),
   hora_inicio time not null default '00:00',
   hora_fim time not null default '23:59:59',
   ativo boolean not null default true,
   created_at timestamp default now()
 );
+
+alter table plano_regras_acesso
+drop constraint if exists plano_regras_acesso_plano_fkey;
+
+alter table plano_regras_acesso
+add constraint plano_regras_acesso_plano_fkey
+foreign key (plano)
+references planos_academia(nome)
+on update cascade
+on delete cascade
+not valid;
+
+create index if not exists plano_regras_acesso_plano_idx on plano_regras_acesso(plano);
 
 create table if not exists bloqueios_alunos (
   id uuid primary key default gen_random_uuid(),

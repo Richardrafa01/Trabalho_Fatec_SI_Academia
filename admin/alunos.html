@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alunos - Academia Pro</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/menu.html">Voltar ao painel</a>
+
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-950">Alunos</h1>
+            <p class="mt-1 text-sm text-slate-600">Cadastros, consultas, matrículas e histórico dos alunos.</p>
+          </div>
+          <a class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" href="../admin/cadastrar-aluno.html">
+            Cadastrar aluno
+          </a>
+        </div>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/ver-alunos.html">
+            <p class="text-base font-bold text-slate-950">Consultar alunos</p>
+            <p class="mt-2 text-sm text-slate-600">Busque alunos cadastrados e veja informações principais.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/editar-aluno.html">
+            <p class="text-base font-bold text-slate-950">Atualizar cadastro</p>
+            <p class="mt-2 text-sm text-slate-600">Edite dados pessoais, plano, endereço e status.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/excluir-aluno.html">
+            <p class="text-base font-bold text-slate-950">Remover cadastro</p>
+            <p class="mt-2 text-sm text-slate-600">Remova um aluno cadastrado do sistema.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/historico-aluno.html">
+            <p class="text-base font-bold text-slate-950">Histórico do aluno</p>
+            <p class="mt-2 text-sm text-slate-600">Acompanhe dados e registros vinculados ao aluno.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/renovar-matricula.html">
+            <p class="text-base font-bold text-slate-950">Renovar matrícula</p>
+            <p class="mt-2 text-sm text-slate-600">Registre pagamento e atualize a validade do plano.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/controle-acesso.html">
+            <p class="text-base font-bold text-slate-950">Controle de acesso</p>
+            <p class="mt-2 text-sm text-slate-600">Gerencie entradas, bloqueios e liberação na catraca.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/admin-theme.js"></script>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Controle de Acesso - Academia Pro</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/menu.html">Voltar ao painel</a>
+
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-950">Controle de acesso</h1>
+            <p class="mt-1 text-sm text-slate-600">Entradas, bloqueios, vencimentos e liberação de alunos.</p>
+          </div>
+          <a class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" href="../admin/presenca-aluno.html">
+            Consultar acessos
+          </a>
+        </div>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/presenca-aluno.html">
+            <p class="text-base font-bold text-slate-950">Registrar entrada na catraca</p>
+            <p class="mt-2 text-sm text-slate-600">Registre a presença do aluno e acompanhe os acessos.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/bloquear-aluno.html">
+            <p class="text-base font-bold text-slate-950">Bloquear ou liberar aluno</p>
+            <p class="mt-2 text-sm text-slate-600">Controle manualmente a permissão de entrada.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/renovar-matricula.html">
+            <p class="text-base font-bold text-slate-950">Reativar por pagamento</p>
+            <p class="mt-2 text-sm text-slate-600">Renove a matrícula e libere o acesso após o pagamento.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/ver-alunos.html">
+            <p class="text-base font-bold text-slate-950">Consultar situação dos alunos</p>
+            <p class="mt-2 text-sm text-slate-600">Veja cadastros, status e vencimentos dos alunos.</p>
+          </a>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/admin-theme.js"></script>
+  </body>
+</html>

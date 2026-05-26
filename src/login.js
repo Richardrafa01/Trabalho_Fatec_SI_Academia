@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { appPath } from "./routes.js";
 
 const form = document.querySelector("#login-form");
 const emailInput = document.querySelector("#email");
@@ -18,7 +19,7 @@ async function getRedirectByProfile() {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData.user;
 
-  if (!user) return "/";
+  if (!user) return appPath("/");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -26,8 +27,8 @@ async function getRedirectByProfile() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.tipo_usuario === "PROFESSOR") return "/professor/menu.html";
-  return "/admin/menu.html";
+  if (profile?.tipo_usuario === "PROFESSOR") return appPath("/professor/menu.html");
+  return appPath("/admin/menu.html");
 }
 
 const { data } = await supabase.auth.getSession();

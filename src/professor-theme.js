@@ -1,3 +1,5 @@
+import { appPath, currentPath } from "./routes.js";
+
 const theme = localStorage.getItem("professor-theme") ?? "light";
 
 document.body.classList.toggle("professor-theme-black", theme === "black");
@@ -11,7 +13,7 @@ const professorPages = {
 };
 
 function getActiveProfessorHref() {
-  const path = window.location.pathname;
+  const path = currentPath();
 
   if (path === "/professor/configuracoes.html") return "/professor/configuracoes.html";
   if (path.includes("presenca")) return "/professor/menu.html#aulas";
@@ -21,14 +23,14 @@ function getActiveProfessorHref() {
 }
 
 function isActiveLink(href) {
-  const url = new URL(href, window.location.origin);
-  const activeUrl = new URL(getActiveProfessorHref(), window.location.origin);
+  const url = new URL(appPath(href), window.location.origin);
+  const activeUrl = new URL(appPath(getActiveProfessorHref()), window.location.origin);
   return url.pathname === activeUrl.pathname && url.hash === activeUrl.hash;
 }
 
 function createNavLink(label, href) {
   const link = document.createElement("a");
-  link.href = href;
+  link.href = appPath(href);
   link.textContent = label;
 
   if (isActiveLink(href)) {
@@ -39,7 +41,7 @@ function createNavLink(label, href) {
 }
 
 function setupProfessorContextNav() {
-  if (window.location.pathname === "/professor/menu.html") return;
+  if (currentPath() === "/professor/menu.html") return;
   if (document.querySelector(".app-context-nav")) return;
 
   const nav = document.createElement("header");
@@ -56,7 +58,7 @@ function setupProfessorContextNav() {
 
   const subtitle = document.createElement("p");
   subtitle.className = "app-context-nav-subtitle";
-  subtitle.textContent = professorPages[window.location.pathname] ?? "Rotina de atendimento";
+  subtitle.textContent = professorPages[currentPath()] ?? "Rotina de atendimento";
 
   titleBox.append(title, subtitle);
 

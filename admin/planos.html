@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planos - Academia Pro</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/menu.html">Voltar ao painel</a>
+
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-950">Planos</h1>
+            <p class="mt-1 text-sm text-slate-600">Atualize valores, descontos, duração e status dos planos.</p>
+          </div>
+          <button id="novo-plano-button" class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" type="button">
+            Cadastrar novo plano
+          </button>
+        </div>
+
+        <p id="planos-message" class="mt-5 hidden"></p>
+
+        <form id="novo-plano-form" class="mt-6 hidden rounded-md border border-slate-200 p-4">
+          <h2 class="text-base font-bold text-slate-950">Novo plano</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="lg:col-span-2">
+              <label class="mb-2 block text-sm font-bold text-slate-700" for="novo-plano-nome">Nome</label>
+              <input id="novo-plano-nome" name="nome" class="h-11 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" required />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-bold text-slate-700" for="novo-plano-meses">Duração</label>
+              <input id="novo-plano-meses" name="meses" class="h-11 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" min="1" step="1" type="number" value="1" required />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-bold text-slate-700" for="novo-plano-valor">Valor</label>
+              <input id="novo-plano-valor" name="valor" class="h-11 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" min="0" step="0.01" type="number" value="0.00" required />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-bold text-slate-700" for="novo-plano-desconto">Desconto</label>
+              <input id="novo-plano-desconto" name="desconto" class="h-11 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" value="Sem desconto" />
+            </div>
+          </div>
+          <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div class="w-full sm:w-56">
+              <label class="mb-2 block text-sm font-bold text-slate-700" for="novo-plano-status">Status</label>
+              <select id="novo-plano-status" name="status" class="h-11 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15">
+                <option value="ATIVO">Ativo</option>
+                <option value="INATIVO">Inativo</option>
+              </select>
+            </div>
+            <button class="h-11 rounded-md bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-700" type="submit">
+              Salvar novo plano
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left text-sm">
+            <thead class="bg-slate-100 text-slate-600">
+              <tr>
+                <th class="px-4 py-3 font-bold">Plano</th>
+                <th class="px-4 py-3 font-bold">Valor</th>
+                <th class="px-4 py-3 font-bold">Duração</th>
+                <th class="px-4 py-3 font-bold">Desconto</th>
+                <th class="px-4 py-3 font-bold">Status</th>
+                <th class="px-4 py-3 font-bold">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="planos-lista" class="divide-y divide-slate-100">
+              <tr>
+                <td class="px-4 py-6 text-center text-slate-500" colspan="6">Carregando planos.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/admin-theme.js"></script>
+    <script type="module" src="/src/admin-planos.js"></script>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { appPath, navigate } from "./routes.js";
 
 const page = document.body.dataset.page;
 const message = document.querySelector("#message");
@@ -25,7 +26,7 @@ function showMessage(text, type = "success") {
 async function protectPage() {
   const { data } = await supabase.auth.getSession();
   if (!data.session) {
-    window.location.href = "/";
+    navigate("/");
     return false;
   }
 
@@ -36,13 +37,13 @@ async function protectPage() {
     .maybeSingle();
 
   if (profile?.tipo_usuario === "PROFESSOR") {
-    window.location.href = "/professor/menu.html";
+    navigate("/professor/menu.html");
     return false;
   }
 
   if (!backofficeRoles.includes(profile?.tipo_usuario) || profile?.status === "INATIVO") {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
     return false;
   }
 
@@ -242,7 +243,7 @@ function renderProfessorCards(professores) {
           <dd class="mt-1 text-slate-800" data-field="horarios"></dd>
         </div>
       </dl>
-      <a class="mt-4 inline-flex rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-orange-700 hover:border-orange-300 hover:bg-orange-50" href="/admin/editar-professor.html?id=${professor.id}">
+      <a class="mt-4 inline-flex rounded-md border border-slate-200 px-3 py-2 text-sm font-bold text-orange-700 hover:border-orange-300 hover:bg-orange-50" href="${appPath(`/admin/editar-professor.html?id=${professor.id}`)}">
         Editar dados
       </a>
     `;

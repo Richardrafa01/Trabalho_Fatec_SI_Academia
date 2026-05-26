@@ -1,5 +1,6 @@
 import { supabase } from "./supabase.js";
 import { calcularValorPlano, getPlanoMensal, getPlanos, normalizeDesconto, salvarPlano } from "./planos.js";
+import { appPath, navigate } from "./routes.js";
 
 const email = document.querySelector("#user-email");
 const logoutButton = document.querySelector("#logout-button");
@@ -35,7 +36,7 @@ let canAccessAdmin = false;
 let currentRole = null;
 
 if (!data.session) {
-  window.location.href = "/";
+  navigate("/");
 } else {
   const { data: profile } = await supabase
     .from("profiles")
@@ -44,10 +45,10 @@ if (!data.session) {
     .maybeSingle();
 
   if (profile?.tipo_usuario === "PROFESSOR") {
-    window.location.href = "/professor/menu.html";
+    navigate("/professor/menu.html");
   } else if (!backofficeRoles.includes(profile?.tipo_usuario) || profile?.status === "INATIVO") {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    navigate("/");
   } else {
     canAccessAdmin = true;
     currentRole = profile.tipo_usuario;
@@ -62,7 +63,7 @@ if (!canAccessAdmin) {
 function applyRoleNavigation() {
   if (["ADMIN", "GERENTE"].includes(currentRole)) return;
 
-  document.querySelectorAll('a[href="#professores"], a[href="/admin/ver-professores.html"], a[href="/admin/cadastrar-professor.html"], a[href="/admin/editar-professor.html"], a[href="/admin/excluir-professor.html"]').forEach((element) => {
+  document.querySelectorAll('a[href="../admin/funcionarios.html"], a[href="../admin/ver-professores.html"], a[href="../admin/cadastrar-professor.html"], a[href="../admin/editar-professor.html"], a[href="../admin/excluir-professor.html"]').forEach((element) => {
     element.classList.add("hidden");
   });
 
@@ -457,7 +458,7 @@ async function carregarProfessores() {
         <span class="rounded-md px-2 py-1 text-xs font-bold ${statusClass}"></span>
       </td>
       <td class="px-4 py-4">
-        <a class="font-bold text-orange-700" href="/admin/editar-professor.html?id=${professor.id}">Editar</a>
+        <a class="font-bold text-orange-700" href="${appPath(`/admin/editar-professor.html?id=${professor.id}`)}">Editar</a>
       </td>
     `;
 
@@ -669,5 +670,5 @@ await carregarPlanos();
 
 logoutButton.addEventListener("click", async () => {
   await supabase.auth.signOut();
-  window.location.href = "/";
+  navigate("/");
 });

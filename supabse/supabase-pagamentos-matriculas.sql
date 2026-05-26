@@ -1,7 +1,7 @@
 create table if not exists pagamentos_matriculas (
   id uuid primary key default gen_random_uuid(),
   aluno_id uuid not null references alunos(id) on delete cascade,
-  plano varchar(50) not null,
+  plano varchar(50) not null references planos_academia(nome) on update cascade on delete restrict,
   valor numeric(8,2) not null,
   forma_pagamento varchar(30) not null,
   status varchar(20) not null default 'PAGO',
@@ -11,6 +11,19 @@ create table if not exists pagamentos_matriculas (
   pago_em timestamp default now(),
   created_at timestamp default now()
 );
+
+alter table pagamentos_matriculas
+drop constraint if exists pagamentos_matriculas_plano_fkey;
+
+alter table pagamentos_matriculas
+add constraint pagamentos_matriculas_plano_fkey
+foreign key (plano)
+references planos_academia(nome)
+on update cascade
+on delete restrict
+not valid;
+
+create index if not exists pagamentos_matriculas_plano_idx on pagamentos_matriculas(plano);
 
 alter table pagamentos_matriculas enable row level security;
 
