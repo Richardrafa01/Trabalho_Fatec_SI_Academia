@@ -50,9 +50,90 @@
   .app-context-nav-links a[aria-current="page"] {
     @apply border-orange-300 bg-orange-50 text-orange-700;
   }
+
+  .app-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-slate-800 bg-slate-950 text-white transition-all duration-200 lg:flex lg:flex-col;
+  }
+
+  .app-sidebar-brand {
+    @apply relative border-b border-white/10 p-6 pr-16;
+  }
+
+  .app-sidebar-kicker {
+    @apply block text-xs font-bold uppercase tracking-wider text-orange-400;
+  }
+
+  .app-sidebar-title {
+    @apply mt-2 block text-2xl font-bold;
+  }
+
+  .app-sidebar-toggle {
+    @apply absolute right-4 top-5 inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/10 text-slate-200 hover:bg-white/10 hover:text-white;
+  }
+
+  .app-sidebar-nav {
+    @apply space-y-1 p-4 text-sm font-semibold;
+  }
+
+  .app-sidebar-link {
+    @apply flex min-h-12 items-center gap-3 rounded-md px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white;
+  }
+
+  .app-sidebar-link[aria-current="page"] {
+    @apply bg-orange-600 text-white;
+  }
+
+  .app-sidebar-icon {
+    @apply h-5 w-5 shrink-0;
+  }
 }
 
 @layer utilities {
+  @media (min-width: 1024px) {
+    body.app-has-sidebar {
+      padding-left: 18rem;
+      transition: padding-left 200ms ease;
+    }
+
+    body.app-has-sidebar.app-sidebar-collapsed {
+      padding-left: 4.5rem;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar {
+      width: 4.5rem;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar-brand {
+      padding: 1rem 0.875rem;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar-kicker,
+    body.app-sidebar-collapsed .app-sidebar-title,
+    body.app-sidebar-collapsed .app-sidebar-link span {
+      @apply sr-only;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar-toggle {
+      position: static;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar-nav {
+      @apply px-3;
+    }
+
+    body.app-sidebar-collapsed .app-sidebar-link {
+      @apply justify-center px-0;
+    }
+
+    body.app-has-sidebar > .flex > aside:first-child {
+      display: none !important;
+    }
+
+    body.app-has-sidebar .app-context-nav-links {
+      display: none;
+    }
+  }
+
   main > a:first-child {
     @apply inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700;
   }
