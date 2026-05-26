@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastrar Funcionário - Academia Pro</title>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/routes-Bgo3Lf6M.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/admin-theme-RqHdBxgJ.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/supabase-DRIufT6S.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/professores-BPSnjIid.js"></script>
+    <link rel="stylesheet" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/routes-DYyKSHWH.css">
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900" data-page="cadastrar-professor">
+    <main class="mx-auto max-w-4xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/funcionarios.html">Voltar para funcionários</a>
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold text-slate-950">Cadastrar funcionário</h1>
+        <p class="mt-1 text-sm text-slate-600">Cadastre um funcionário da academia.</p>
+        <p id="message" class="mt-5 hidden"></p>
+
+        <form id="professor-form" class="mt-6 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="nome_completo">Nome completo</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="nome_completo" name="nome_completo" required />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="email">E-mail</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="email" name="email" type="email" required />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="telefone">Telefone</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="telefone" name="telefone" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cpf">CPF</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cpf" name="cpf" required />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="data_nascimento">Data de nascimento</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="data_nascimento" name="data_nascimento" type="date" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="status">Status</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="status" name="status">
+              <option value="ATIVO">Ativo</option>
+              <option value="INATIVO">Inativo</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cargo">Cargo</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cargo" name="cargo" required>
+              <option value="Professor de musculacao">Professor de musculação</option>
+              <option value="Personal trainer">Personal trainer</option>
+              <option value="Avaliador fisico">Avaliador físico</option>
+              <option value="Recepcionista">Recepcionista</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Gerente">Gerente</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="perfil_acesso">Perfil de acesso</label>
+            <select class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="perfil_acesso" name="perfil_acesso" required>
+              <option value="PROFESSOR">Professor</option>
+              <option value="RECEPCAO">Recepção</option>
+              <option value="ADMINISTRATIVO">Administrativo</option>
+              <option value="GERENTE">Gerente</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="especialidade">Especialidade</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="especialidade" name="especialidade" placeholder="Ex: Musculação" required />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="cref">CREF</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="cref" name="cref" placeholder="Ex: 000000-G/SP" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="valor_hora">Valor por hora</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="valor_hora" name="valor_hora" type="number" min="0" step="0.01" placeholder="Ex: 80.00" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="horarios">Horários</label>
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="horarios" name="horarios" placeholder="Ex: Seg a Sex" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="observacoes">Observações</label>
+            <textarea class="min-h-28 w-full rounded-md border border-slate-300 p-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="observacoes" name="observacoes"></textarea>
+          </div>
+          <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700 sm:col-span-2" type="submit">
+            Salvar funcionário
+          </button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presença do Aluno - Academia Pro</title>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/routes-Bgo3Lf6M.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/admin-theme-RqHdBxgJ.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/supabase-DRIufT6S.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/planos-DYzH_05V.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/alunos-C53tHiEu.js"></script>
+    <link rel="stylesheet" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/routes-DYyKSHWH.css">
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900" data-page="presenca-aluno">
+    <main class="mx-auto max-w-4xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/controle-acesso.html">Voltar ao controle de acesso</a>
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold text-slate-950">Presença do aluno</h1>
+        <p class="mt-1 text-sm text-slate-600">Registre a entrada do aluno.</p>
+        <p id="message" class="mt-5 hidden"></p>
+        <p id="empty-state" class="mt-5 hidden rounded-md border border-dashed border-slate-300 p-4 text-center text-sm text-slate-500">Nenhum aluno cadastrado.</p>
+        <form id="aluno-form" class="mt-6 grid gap-4">
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-700" for="aluno-id">Aluno</label>
+            <input id="aluno-id" type="hidden" />
+            <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="aluno-search" autocomplete="off" placeholder="Buscar por nome" />
+            <div id="aluno-results" class="mt-2 hidden overflow-hidden rounded-md border border-slate-200 bg-white"></div>
+          </div>
+          <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700" type="submit">Registrar entrada pela catraca</button>
+        </form>
+        <pre id="presenca-box" class="mt-5 min-h-40 whitespace-pre-wrap rounded-md bg-slate-100 p-4 text-sm text-slate-700">Selecione um aluno para ver os acessos.</pre>
+      </section>
+    </main>
+  </body>
+</html>

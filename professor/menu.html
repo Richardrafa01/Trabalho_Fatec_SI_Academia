@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do Professor - Academia Pro</title>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/menuProfessor-DwmDYZ5I.js"></script>
+    <link rel="modulepreload" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/routes-Bgo3Lf6M.js">
+    <link rel="modulepreload" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/supabase-DRIufT6S.js">
+    <link rel="modulepreload" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/professor-theme-C2l68Wit.js">
+    <link rel="stylesheet" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/routes-DYyKSHWH.css">
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+    <div class="flex min-h-screen">
+      <aside class="hidden w-72 border-r border-slate-200 bg-slate-950 text-white lg:block">
+        <div class="border-b border-white/10 p-6">
+          <span class="text-xs font-bold uppercase tracking-wider text-orange-400">Academia Pro</span>
+          <h1 class="mt-2 text-2xl font-bold">Professor</h1>
+          <p id="user-email" class="mt-3 text-sm leading-6 text-slate-300"></p>
+        </div>
+
+        <nav class="space-y-1 p-4 text-sm font-semibold">
+          <a class="block rounded-md bg-orange-600 px-4 py-3 text-white" href="#dashboard">Painel</a>
+          <a class="block rounded-md px-4 py-3 text-slate-300 transition hover:bg-white/10 hover:text-white" href="#alunos">Alunos</a>
+          <a class="block rounded-md px-4 py-3 text-slate-300 transition hover:bg-white/10 hover:text-white" href="#aulas">Aulas e presencas</a>
+          <a class="block rounded-md px-4 py-3 text-slate-300 transition hover:bg-white/10 hover:text-white" href="#treinos">Treinos</a>
+          <a class="block rounded-md px-4 py-3 text-slate-300 transition hover:bg-white/10 hover:text-white" href="../professor/configuracoes.html">Configuracoes</a>
+        </nav>
+      </aside>
+
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header class="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
+          <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-orange-600">Painel do professor</span>
+              <h2 class="text-xl font-bold text-slate-950 sm:text-2xl">Rotina de atendimento</h2>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-slate-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700" href="../professor/configuracoes.html" title="Configuracoes" aria-label="Configuracoes">
+                <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" />
+                  <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.05.05a2.1 2.1 0 0 1-2.97 2.97l-.05-.05a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.1 1.66V21a2.1 2.1 0 0 1-4.2 0v-.08a1.8 1.8 0 0 0-1.1-1.66 1.8 1.8 0 0 0-1.98.36l-.05.05a2.1 2.1 0 0 1-2.97-2.97l.05-.05A1.8 1.8 0 0 0 4.6 15a1.8 1.8 0 0 0-1.66-1.1H3a2.1 2.1 0 0 1 0-4.2h.08A1.8 1.8 0 0 0 4.74 8.6a1.8 1.8 0 0 0-.36-1.98l-.05-.05A2.1 2.1 0 0 1 7.3 3.6l.05.05a1.8 1.8 0 0 0 1.98.36A1.8 1.8 0 0 0 10.43 2.35V2.3a2.1 2.1 0 0 1 4.2 0v.08a1.8 1.8 0 0 0 1.1 1.66 1.8 1.8 0 0 0 1.98-.36l.05-.05a2.1 2.1 0 0 1 2.97 2.97l-.05.05a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.66 1.1H22a2.1 2.1 0 0 1 0 4.2h-.08A1.8 1.8 0 0 0 19.4 15Z" />
+                </svg>
+              </a>
+              <button id="logout-button" class="rounded-md bg-slate-900 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-700" type="button">
+                Sair
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <nav class="border-b border-slate-200 bg-white px-4 py-3 text-sm font-bold lg:hidden" aria-label="Navegacao principal do professor">
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            <a class="whitespace-nowrap rounded-md bg-orange-600 px-3 py-2 text-white" href="#dashboard">Painel</a>
+            <a class="whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700" href="#alunos">Alunos</a>
+            <a class="whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700" href="#aulas">Aulas e presencas</a>
+            <a class="whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700" href="#treinos">Treinos</a>
+            <a class="whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700" href="#conta">Conta</a>
+          </div>
+        </nav>
+
+        <main class="flex flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+          <section id="dashboard" class="order-1">
+            <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <h2 class="text-2xl font-bold text-slate-950">Painel do dia</h2>
+                <p class="mt-1 text-sm text-slate-600">Resumo do dia.</p>
+              </div>
+              <span id="today-label" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm">Hoje</span>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <article class="rounded-lg bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">Alunos ativos</p>
+                <strong id="prof-alunos-ativos" class="mt-3 block text-3xl font-bold text-emerald-600">0</strong>
+              </article>
+              <article class="rounded-lg bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">Acessos hoje</p>
+                <strong id="prof-acessos-hoje" class="mt-3 block text-3xl font-bold text-slate-950">0</strong>
+              </article>
+              <article class="rounded-lg bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">Matriculas vencendo</p>
+                <strong id="prof-vencendo" class="mt-3 block text-3xl font-bold text-orange-600">0</strong>
+              </article>
+              <article class="rounded-lg bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">Status da conta</p>
+                <strong id="prof-status" class="mt-3 block text-3xl font-bold text-slate-950">Ativo</strong>
+              </article>
+            </div>
+          </section>
+
+          <section id="alunos" class="order-2 rounded-lg bg-white p-5 shadow-sm">
+            <div class="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <h2 class="text-xl font-bold text-slate-950">Alunos</h2>
+                <p class="mt-1 text-sm text-slate-600">Consulte alunos e vencimentos.</p>
+              </div>
+              <a class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" href="../professor/ver-alunos.html">
+                Ver alunos
+              </a>
+            </div>
+
+            <div id="prof-alunos-lista" class="grid gap-3 lg:grid-cols-2">
+              <div class="rounded-md border border-dashed border-slate-300 p-5 text-sm text-slate-500">Carregando alunos recentes.</div>
+            </div>
+          </section>
+
+          <section id="aulas" class="order-3 rounded-lg bg-white p-5 shadow-sm">
+            <div class="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <h2 class="text-xl font-bold text-slate-950">Aulas e presencas</h2>
+                <p class="mt-1 text-sm text-slate-600">Registre presencas e entradas.</p>
+              </div>
+              <a class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" href="../professor/presenca-aluno.html">
+                Registrar presenca
+              </a>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <a class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold hover:border-orange-300 hover:bg-orange-50" href="../professor/presenca-aluno.html">Registrar entrada</a>
+              <a class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold hover:border-orange-300 hover:bg-orange-50" href="../professor/ver-alunos.html">Consultar aluno</a>
+              <button class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-500" type="button" disabled>Registrar aula coletiva</button>
+            </div>
+          </section>
+
+          <section id="treinos" class="order-4 rounded-lg bg-white p-5 shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-slate-950">Treinos</h2>
+              <p class="mt-1 text-sm text-slate-600">Fichas e avaliacoes dos alunos.</p>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <button class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-500" type="button" disabled>Criar treino</button>
+              <button class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-500" type="button" disabled>Editar ficha</button>
+              <button class="rounded-md border border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-500" type="button" disabled>Avaliar aluno</button>
+            </div>
+          </section>
+
+          <section id="conta" class="order-5 rounded-lg bg-white p-5 shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-bold text-slate-950">Conta</h2>
+              <p class="mt-1 text-sm text-slate-600">Senha e dados da conta.</p>
+            </div>
+
+            <div id="password-alert" class="mb-4 hidden rounded-md border border-orange-200 bg-orange-50 p-4">
+              <p class="font-bold text-orange-800">Troque sua senha inicial</p>
+              <p class="mt-1 text-sm text-orange-700">Crie uma senha propria.</p>
+            </div>
+            <p id="password-success" class="mb-4 hidden rounded-md bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"></p>
+
+            <section id="password-section" class="rounded-md border border-slate-200 p-4">
+              <h3 class="text-lg font-bold text-slate-950">Alterar senha</h3>
+              <p class="mt-1 text-sm text-slate-600">Use uma senha propria nos proximos acessos.</p>
+              <p id="password-message" class="mt-4 hidden"></p>
+
+              <form id="password-form" class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="mb-2 block text-sm font-bold text-slate-700" for="new-password">Nova senha</label>
+                  <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="new-password" minlength="6" required type="password" />
+                </div>
+                <div>
+                  <label class="mb-2 block text-sm font-bold text-slate-700" for="confirm-password">Confirmar senha</label>
+                  <input class="h-12 w-full rounded-md border border-slate-300 px-3 outline-none focus:border-orange-600 focus:ring-4 focus:ring-orange-600/15" id="confirm-password" minlength="6" required type="password" />
+                </div>
+                <button class="h-12 rounded-md bg-orange-600 px-4 text-sm font-bold text-white hover:bg-orange-700 sm:col-span-2" type="submit">
+                  Salvar nova senha
+                </button>
+              </form>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Funcionários - Academia Pro</title>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/routes-Bgo3Lf6M.js"></script>
+    <script type="module" crossorigin src="/Trabalho_Fatec_SI_Academia/assets/admin-theme-RqHdBxgJ.js"></script>
+    <link rel="stylesheet" crossorigin href="/Trabalho_Fatec_SI_Academia/assets/routes-DYyKSHWH.css">
+  </head>
+  <body class="min-h-screen bg-slate-100 font-sans text-slate-900">
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <a class="text-sm font-bold text-orange-700 hover:underline" href="../admin/menu.html">Voltar ao painel</a>
+
+      <section class="mt-5 rounded-lg bg-white p-6 shadow-sm">
+        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-950">Funcionários</h1>
+            <p class="mt-1 text-sm text-slate-600">Equipe, cargos, status e acessos administrativos.</p>
+          </div>
+          <a class="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700" href="../admin/cadastrar-professor.html">
+            Cadastrar funcionário
+          </a>
+        </div>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/ver-professores.html">
+            <p class="text-base font-bold text-slate-950">Ver funcionários ativos</p>
+            <p class="mt-2 text-sm text-slate-600">Consulte a equipe ativa cadastrada na academia.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/editar-professor.html">
+            <p class="text-base font-bold text-slate-950">Editar dados e status</p>
+            <p class="mt-2 text-sm text-slate-600">Atualize cargo, perfil, dados pessoais e status.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-red-300 hover:bg-red-50" href="../admin/excluir-professor.html">
+            <p class="text-base font-bold text-slate-950">Excluir funcionário</p>
+            <p class="mt-2 text-sm text-slate-600">Remova um funcionário cadastrado do sistema.</p>
+          </a>
+          <a class="rounded-md border border-slate-200 p-5 hover:border-orange-300 hover:bg-orange-50" href="../admin/cadastrar-professor.html">
+            <p class="text-base font-bold text-slate-950">Novo acesso de funcionário</p>
+            <p class="mt-2 text-sm text-slate-600">Cadastre um novo usuário para a equipe.</p>
+          </a>
+        </div>
+
+        <div class="mt-6 grid gap-3 lg:grid-cols-3">
+          <article class="rounded-md border border-slate-200 p-4">
+            <p class="text-sm font-bold text-slate-950">Atendimento / Recepção</p>
+            <p class="mt-2 text-sm text-slate-600">Alunos, planos, pagamentos e entrada.</p>
+          </article>
+          <article class="rounded-md border border-slate-200 p-4">
+            <p class="text-sm font-bold text-slate-950">Professores / Personal</p>
+            <p class="mt-2 text-sm text-slate-600">Treinos, aulas e avaliações.</p>
+          </article>
+          <article class="rounded-md border border-slate-200 p-4">
+            <p class="text-sm font-bold text-slate-950">Aluno / Aplicativo</p>
+            <p class="mt-2 text-sm text-slate-600">Treinos, pagamentos e agendamentos.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
