@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'node:path'
 
 export default defineConfig({
-  base: '/Sistema-de-academia/',
+  base: '/Trabalho_Fatec_SI_Academia/',
   plugins: [
     react(),
     tailwindcss(),
